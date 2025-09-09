@@ -1,0 +1,168 @@
+.feature-benefits {
+  background: #ffffff;
+  padding: 80px 0 40px 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.feature-benefits .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.feature-item {
+  text-align: center;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.feature-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 20px auto;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.feature-icon:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.feature-icon svg {
+  width: 45px;
+  height: 45px;
+}
+
+.feature-item h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+}
+
+.feature-item p {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 250px;
+}
+
+/* Animation styles */
+.feature-item:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.feature-item:nth-child(even) {
+  animation-delay: 0.3s;
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+  }
+  
+  .feature-benefits {
+    padding: 60px 0 30px 0;
+  }
+  
+  .feature-icon {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .feature-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .feature-item h3 {
+    font-size: 20px;
+  }
+  
+  .feature-item p {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .feature-benefits {
+    padding: 40px 0 20px 0;
+  }
+  
+  .feature-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+  }
+  
+  .feature-icon svg {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .feature-item h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  
+  .feature-item p {
+    font-size: 14px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .feature-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .feature-icon svg {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .feature-item h3 {
+    font-size: 16px;
+  }
+  
+  .feature-item p {
+    font-size: 13px;
+  }
+}

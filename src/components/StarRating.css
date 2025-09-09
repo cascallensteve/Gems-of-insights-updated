@@ -1,0 +1,240 @@
+/* Star Rating Component Styles */
+.star-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.stars-container {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  transition: all 0.2s ease;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+}
+
+.star:hover {
+  transform: scale(1.1);
+}
+
+.star:active {
+  transform: scale(0.95);
+}
+
+.star.empty {
+  color: #d1d5db;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+.star:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.star.submitting {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.star svg {
+  width: 100%;
+  height: 100%;
+  transition: all 0.2s ease;
+}
+
+/* Size variants */
+.star-rating.small .star {
+  width: 16px;
+  height: 16px;
+}
+
+.star-rating.medium .star {
+  width: 24px;
+  height: 24px;
+}
+
+.star-rating.large .star {
+  width: 32px;
+  height: 32px;
+}
+
+/* Read-only styling */
+.star-rating.readonly .star {
+  cursor: default;
+  pointer-events: none;
+}
+
+.star-rating.readonly .star:hover {
+  transform: none;
+}
+
+/* Rating info text */
+.rating-info {
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+}
+
+.rating-prompt {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.rating-display {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.login-required {
+  font-size: 12px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.rating-submitted {
+  font-size: 14px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.rating-submitting {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Hover effects for interactive stars */
+.star-rating:not(.readonly) .star:hover {
+  color: #f59e0b;
+  filter: brightness(1.1);
+}
+
+.star-rating:not(.readonly) .star.empty:hover {
+  color: #fbbf24;
+}
+
+/* Animation for rating submission */
+.star.filled {
+  animation: starFill 0.3s ease-out;
+}
+
+@keyframes starFill {
+  0% {
+    transform: scale(1);
+    color: #d1d5db;
+  }
+  50% {
+    transform: scale(1.2);
+    color: #f59e0b;
+  }
+  100% {
+    transform: scale(1);
+    color: #fbbf24;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .star-rating.medium .star {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .star-rating.large .star {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .stars-container {
+    gap: 2px;
+  }
+  
+  .rating-info {
+    font-size: 12px;
+  }
+  
+  .rating-prompt,
+  .rating-display,
+  .rating-submitted,
+  .rating-submitting {
+    font-size: 12px;
+  }
+  
+  .login-required {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .star-rating.medium .star {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .star-rating.large .star {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Focus styles for accessibility */
+.star:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.star:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .star.empty {
+    color: #000;
+    stroke: #000;
+    stroke-width: 2;
+  }
+  
+  .star.filled {
+    color: #000;
+    background: #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .star {
+    transition: none;
+  }
+  
+  .star:hover {
+    transform: none;
+  }
+  
+  .star:active {
+    transform: none;
+  }
+  
+  .star.filled {
+    animation: none;
+  }
+}

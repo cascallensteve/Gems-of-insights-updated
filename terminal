@@ -1,0 +1,5 @@
+cd src\components
+echo. > PromotionalSale.js
+echo. > PromotionalSale.css
+echo. > BestSellingProducts.js
+echo. > BestSellingProducts.css

@@ -1,0 +1,404 @@
+/* Blog Likes Analytics Styles */
+.blog-likes-analytics {
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin: 20px 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header */
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.analytics-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #013220;
+  margin: 0;
+}
+
+.analytics-header p {
+  color: #6b7280;
+  margin: 5px 0 0 0;
+  font-size: 0.95rem;
+}
+
+.refresh-btn {
+  background: linear-gradient(135deg, #013220, #2C5530);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+  background: linear-gradient(135deg, #2C5530, #355E3B);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(1, 50, 32, 0.3);
+}
+
+/* Summary Statistics */
+.likes-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.summary-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(1, 50, 32, 0.1);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(1, 50, 32, 0.15);
+}
+
+.summary-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 15px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #013220;
+  margin: 0 0 10px 0;
+  line-height: 1;
+}
+
+.summary-card span {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Blogs Likes Section */
+.blogs-likes-section {
+  margin-bottom: 40px;
+}
+
+.blogs-likes-section h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #013220;
+  margin: 0 0 20px 0;
+}
+
+.blogs-likes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.blog-likes-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.blog-likes-card:hover {
+  border-color: rgba(1, 50, 32, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(1, 50, 32, 0.1);
+}
+
+.blog-likes-card.selected {
+  border-color: #013220;
+  box-shadow: 0 8px 25px rgba(1, 50, 32, 0.2);
+}
+
+.blog-info h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.blog-info p {
+  color: #6b7280;
+  margin: 0 0 15px 0;
+  font-size: 0.9rem;
+}
+
+.likes-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(1, 50, 32, 0.05), rgba(44, 85, 48, 0.05));
+  padding: 10px 15px;
+  border-radius: 8px;
+}
+
+.likes-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #013220;
+}
+
+.likes-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.error-badge {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  margin-top: 10px;
+  border: 1px solid #fecaca;
+}
+
+/* Likes Details */
+.likes-details {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.likes-details h5 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 15px 0;
+}
+
+.likes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.like-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.like-item span:first-child {
+  color: #374151;
+  font-weight: 500;
+}
+
+.like-item span:last-child {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.more-likes {
+  text-align: center;
+  padding: 10px;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: #f3f4f6;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+/* Recent Likes Section */
+.recent-likes-section h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #013220;
+  margin: 0 0 20px 0;
+}
+
+.recent-likes-list {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.recent-like-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s ease;
+}
+
+.recent-like-item:last-child {
+  border-bottom: none;
+}
+
+.recent-like-item:hover {
+  background: #f9fafb;
+}
+
+.like-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.blog-title {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+
+.like-user {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.like-time {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Loading and Error States */
+.loading-state, .error-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #013220;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #6b7280;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.error-state h3 {
+  color: #dc2626;
+  margin: 0 0 15px 0;
+}
+
+.error-state p {
+  color: #6b7280;
+  margin: 0 0 20px 0;
+}
+
+.retry-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .blog-likes-analytics {
+    padding: 15px;
+    margin: 15px 0;
+  }
+
+  .analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .analytics-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .likes-summary {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+  }
+
+  .summary-card {
+    padding: 20px 15px;
+  }
+
+  .summary-number {
+    font-size: 2rem;
+  }
+
+  .blogs-likes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recent-like-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .like-info {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .likes-summary {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-card {
+    padding: 15px;
+  }
+
+  .analytics-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .refresh-btn {
+    width: 100%;
+    padding: 12px 20px;
+  }
+}
