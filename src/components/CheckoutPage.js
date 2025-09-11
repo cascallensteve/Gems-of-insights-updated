@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { createOrder, initiateMpesaPayment, checkPaymentStatus, getTransactionStatus } from '../services/api';
 import receiptService from '../services/receiptService';
-import './CheckoutPage.css';
+// Tailwind conversion: removed external CSS import
 import { useNotifications } from '../context/NotificationContext';
 
 const CheckoutPage = () => {
@@ -33,11 +33,28 @@ const CheckoutPage = () => {
 
   const [errors, setErrors] = useState({});
 
+  const toNumber = (value) => {
+    if (typeof value === 'number') return isFinite(value) ? value : 0;
+    if (typeof value === 'string') {
+      const n = parseFloat(value.replace(/[^\d.-]/g, ''));
+      return isNaN(n) ? 0 : n;
+    }
+    return 0;
+  };
+
   const subtotal = Math.max(0, Math.round(getCartTotal()));
   const shippingCost = 0; // Removed shipping from summary
   const tax = 0; // Removed VAT from summary
   const total = subtotal; // Only real product amount
   const displayTotal = (committedTotal !== null && committedTotal !== undefined) ? committedTotal : total;
+
+  // Auth gate: redirect to login if not signed in
+  useEffect(() => {
+    if (!currentUser) {
+      const next = encodeURIComponent('/checkout');
+      window.location.href = `/login?next=${next}`;
+    }
+  }, [currentUser]);
 
   const counties = [
     'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu', 'Garissa',
@@ -120,6 +137,13 @@ const CheckoutPage = () => {
   };
 
   const handlePlaceOrder = async () => {
+    // Block order creation if not authenticated
+    if (!currentUser) {
+      alert('Please sign in to continue to checkout.');
+      const next = encodeURIComponent('/checkout');
+      window.location.href = `/login?next=${next}`;
+      return;
+    }
     if (!validateStep(currentStep)) return;
 
     setLoading(true);
@@ -278,45 +302,37 @@ const CheckoutPage = () => {
 
   if (orderPlaced && paymentStatus === 'completed') {
     return (
-      <div className="checkout-page">
-        <div className="checkout-container">
-          <div className="order-success">
-            <div className="success-icon">
-              ✅
-            </div>
-            
-            <h2>
-              Order Confirmed!
-            </h2>
-            
-            <p>
-              {`Your order #${orderId} has been confirmed and payment received.`}
-            </p>
+      <div className="mt-[64px] md:mt-[72px]">
+        <div className="mx-auto max-w-3xl px-4">
+          <div className="rounded-xl border border-emerald-100 bg-white p-6 text-center shadow-sm">
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white">✅</div>
+            <h2 className="text-2xl font-bold text-gray-900">Order Confirmed!</h2>
+            <p className="mt-1 text-gray-700">{`Your order #${orderId} has been confirmed and payment received.`}</p>
 
             {paymentStatus === 'completed' && (
-              <div className="mpesa-instructions">
-                <h3>Payment Received</h3>
+              <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+                <h3 className="font-semibold">Payment Received</h3>
                 <p>Thank you! Your payment was successful.</p>
               </div>
             )}
 
-            <div className="order-summary">
-              <h3>Order Summary</h3>
-              <p><strong>Order ID:</strong> {orderId}</p>
-              <p><strong>Total Amount:</strong> KSH {total.toLocaleString()}</p>
-              <p><strong>Payment Method:</strong> M-Pesa Mobile Money</p>
-              <p><strong>Delivery Address:</strong> {shippingInfo.address}, {shippingInfo.city}</p>
+            <div className="mt-4 rounded-lg border border-emerald-100 bg-white p-4 text-left">
+              <h3 className="text-lg font-semibold text-gray-900">Order Summary</h3>
+              <p className="text-gray-700"><strong>Order ID:</strong> {orderId}</p>
+              <p className="text-gray-700"><strong>Total Amount:</strong> KSH {total.toLocaleString()}</p>
+              <p className="text-gray-700"><strong>Payment Method:</strong> M-Pesa Mobile Money</p>
+              <p className="text-gray-700"><strong>Delivery Address:</strong> {shippingInfo.address}, {shippingInfo.city}</p>
             </div>
 
-            <div className="success-actions">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
               <button 
-                className="primary-btn" 
+                className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600" 
                 onClick={() => window.location.href = '/orders'}
               >
                 View My Orders
               </button>
               <button 
-                className="receipt-btn" 
+                className="inline-flex items-center justify-center rounded-md border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50" 
                 onClick={() => {
                   const orderData = {
                     id: orderId,
@@ -330,13 +346,13 @@ const CheckoutPage = () => {
                     tax: tax,
                     total: total
                   };
-                  receiptService.downloadReceipt(orderData);
+                  receiptService.printReceipt(orderData);
                 }}
               >
-                📄 Download Receipt
+                🖨️ Print Receipt
               </button>
               <button 
-                className="secondary-btn" 
+                className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50" 
                 onClick={() => window.location.href = '/shop'}
               >
                 Continue Shopping
@@ -349,216 +365,154 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className="checkout-page">
-      <div className="checkout-container">
-
-
-        <div className="checkout-content">
+    <div className="mt-[64px] md:mt-[72px]">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="grid gap-6 md:grid-cols-3">
           {paymentStatus === 'pending' && (
-            <div className="pending-banner" style={{
-              background: '#ecfdf5',
-              border: '1px solid #6ee7b7',
-              color: '#065f46',
-              padding: '14px 18px',
-              borderRadius: 10,
-              marginBottom: 16,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              boxShadow: '0 4px 10px rgba(16,185,129,0.15)'
-            }}>
-              <span style={{fontSize: 20}}>📲</span>
+            <div className="mb-4 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow">
+              <span className="text-xl">📲</span>
               <div>
-                <strong>Awaiting Payment</strong>
+                <strong className="block">Awaiting Payment</strong>
                 <div>Check your phone for the M-Pesa prompt and enter your PIN to pay KSH {((committedTotal ?? total) || 0).toLocaleString()}.</div>
               </div>
             </div>
           )}
           {paymentStatus === 'failed' && (
-            <div className="failed-box" style={{
-              background: '#ffffff',
-              border: '1px solid #fecaca',
-              borderLeft: '6px solid #ef4444',
-              borderRadius: 12,
-              padding: 18,
-              marginBottom: 18,
-              boxShadow: '0 10px 24px rgba(239,68,68,0.12)'
-            }}>
-              <div style={{display: 'flex', alignItems: 'center', gap: 14}}>
-                <div style={{
-                  background: '#fee2e2',
-                  color: '#b91c1c',
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 20,
-                  flexShrink: 0
-                }}>✖</div>
-                <div style={{flex: 1}}>
-                  <div style={{fontWeight: 800, color: '#991b1b', fontSize: 16, marginBottom: 4}}>Payment Failed</div>
-                  <div style={{color: '#7f1d1d', opacity: 0.95, lineHeight: 1.5}}>
-                    The transaction did not complete. Please try again or use a different M-Pesa number.
-                  </div>
+            <div className="mb-4 rounded-xl border border-red-200 bg-white p-4 shadow">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-red-100 text-red-700 text-lg">✖</div>
+                <div className="flex-1">
+                  <div className="mb-1 text-base font-extrabold text-red-800">Payment Failed</div>
+                  <div className="text-red-900/90">The transaction did not complete. Please try again or use a different M-Pesa number.</div>
                 </div>
               </div>
-              <div style={{display: 'flex', gap: 10, marginTop: 14}}>
-                <button
-                  onClick={() => { setPaymentStatus(''); setCurrentStep(2); }}
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: 10,
-                    background: '#ef4444',
-                    color: '#fff',
-                    border: '1px solid #dc2626',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
+              <div className="mt-3 flex items-center gap-2">
+                <button onClick={() => { setPaymentStatus(''); setCurrentStep(2); }} className="inline-flex items-center justify-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700">
                   Try Again
                 </button>
-                <button
-                  onClick={() => { setPaymentStatus(''); setCurrentStep(2); }}
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: 10,
-                    background: '#ffffff',
-                    color: '#991b1b',
-                    border: '1px solid #fecaca',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
+                <button onClick={() => { setPaymentStatus(''); setCurrentStep(2); }} className="inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-50">
                   Change Number
                 </button>
               </div>
             </div>
           )}
           {paymentStatus === 'timeout' && (
-            <div className="timeout-banner" style={{
-              background: '#eff6ff',
-              border: '1px solid #bfdbfe',
-              color: '#1e3a8a',
-              padding: '12px 16px',
-              borderRadius: 8,
-              marginBottom: 16
-            }}>
+            <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-900">
               <strong>Payment Timeout:</strong> We did not receive confirmation in time. If you approved the payment, check SMS; otherwise, try again.
             </div>
           )}
           {/* Main Content */}
-          <div className="checkout-main">
+          <div className="md:col-span-2">
             {currentStep === 1 && (
-              <div className="shipping-step">
-                <div className="step-header">
+              <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between">
                   <button 
-                    className="back-to-cart-btn"
+                    className="text-sm text-gray-700 hover:text-emerald-700"
                     onClick={() => window.location.href = '/cart'}
                   >
                     ← Back to Cart
                   </button>
-                  <h2>Shipping Information</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">Shipping Information</h2>
                 </div>
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>First Name *</label>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">First Name *</label>
                     <input
                       type="text"
                       name="firstName"
                       value={shippingInfo.firstName}
                       onChange={handleInputChange}
-                      className={errors.firstName ? 'error' : ''}
+                      className={`mt-1 w-full rounded-md border ${errors.firstName ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
                     />
-                    {errors.firstName && <span className="error-text">{errors.firstName}</span>}
+                    {errors.firstName && <span className="text-sm text-red-600">{errors.firstName}</span>}
                   </div>
                   
-                  <div className="form-group">
-                    <label>Last Name *</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Last Name *</label>
                     <input
                       type="text"
                       name="lastName"
                       value={shippingInfo.lastName}
                       onChange={handleInputChange}
-                      className={errors.lastName ? 'error' : ''}
+                      className={`mt-1 w-full rounded-md border ${errors.lastName ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
                     />
-                    {errors.lastName && <span className="error-text">{errors.lastName}</span>}
+                    {errors.lastName && <span className="text-sm text-red-600">{errors.lastName}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Email *</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Email *</label>
                     <input
                       type="email"
                       name="email"
                       value={shippingInfo.email}
                       onChange={handleInputChange}
-                      className={errors.email ? 'error' : ''}
+                      className={`mt-1 w-full rounded-md border ${errors.email ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
                     />
-                    {errors.email && <span className="error-text">{errors.email}</span>}
+                    {errors.email && <span className="text-sm text-red-600">{errors.email}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Phone Number *</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Phone Number *</label>
                     <input
                       type="tel"
                       name="phone"
                       value={shippingInfo.phone}
                       onChange={handleInputChange}
                       placeholder="0712345678"
-                      className={errors.phone ? 'error' : ''}
+                      className={`mt-1 w-full rounded-md border ${errors.phone ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
                     />
-                    {errors.phone && <span className="error-text">{errors.phone}</span>}
+                    {errors.phone && <span className="text-sm text-red-600">{errors.phone}</span>}
                   </div>
 
-                  <div className="form-group full-width">
-                    <label>Address *</label>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700">Address *</label>
                     <input
                       type="text"
                       name="address"
                       value={shippingInfo.address}
                       onChange={handleInputChange}
                       placeholder="Street address, building, apartment"
-                      className={errors.address ? 'error' : ''}
+                      className={`mt-1 w-full rounded-md border ${errors.address ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
                     />
-                    {errors.address && <span className="error-text">{errors.address}</span>}
+                    {errors.address && <span className="text-sm text-red-600">{errors.address}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>City *</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">City *</label>
                     <input
                       type="text"
                       name="city"
                       value={shippingInfo.city}
                       onChange={handleInputChange}
-                      className={errors.city ? 'error' : ''}
+                      className={`mt-1 w-full rounded-md border ${errors.city ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
                     />
-                    {errors.city && <span className="error-text">{errors.city}</span>}
+                    {errors.city && <span className="text-sm text-red-600">{errors.city}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>County *</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">County *</label>
                     <select
                       name="county"
                       value={shippingInfo.county}
                       onChange={handleInputChange}
-                      className={errors.county ? 'error' : ''}
+                      className={`mt-1 w-full rounded-md border ${errors.county ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
                     >
                       <option value="">Select County</option>
                       {counties.map(county => (
                         <option key={county} value={county}>{county}</option>
                       ))}
                     </select>
-                    {errors.county && <span className="error-text">{errors.county}</span>}
+                    {errors.county && <span className="text-sm text-red-600">{errors.county}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Postal Code</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Postal Code</label>
                     <input
                       type="text"
                       name="postalCode"
                       value={shippingInfo.postalCode}
                       onChange={handleInputChange}
+                      className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200"
                     />
                   </div>
                 </div>
@@ -566,38 +520,26 @@ const CheckoutPage = () => {
             )}
 
             {currentStep === 2 && (
-              <div className="payment-step">
-                <h2>Payment Method</h2>
+              <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900">Payment Method</h2>
                 
-                <div className="payment-methods">
-                  <div className="payment-method-header">
-                    <h3>Instant Payment - M-Pesa Only</h3>
-                    <p>Secure and instant mobile money payment</p>
-                  </div>
-                  
-                  <div className={`payment-option selected mpesa-only`}>
-                    <div className="payment-info">
-                      <div className="payment-logo">
-                        <img 
-                          src="https://res.cloudinary.com/dqvsjtkqw/image/upload/v1755521690/download_fab1uz.png" 
-                          alt="M-Pesa"
-                          onError={(e) => {
-                            console.log(`Failed to load M-Pesa logo: ${e.target.src}`);
-                            // Fallback to a simple M-Pesa text if image fails
-                            e.target.style.display = 'none';
-                            e.target.parentNode.innerHTML = '<div style="color: #00D160; font-weight: bold; font-size: 18px;">M-PESA</div>';
-                          }}
-                          onLoad={() => console.log(`Successfully loaded M-Pesa logo`)}
-                        />
-                      </div>
-                      <div className="payment-details">
-                        <h3>M-Pesa Mobile Money</h3>
-                        <p>Fast, secure & instant payment</p>
-                        <div className="payment-features">
-                          <span className="feature">✓ Instant Processing</span>
-                          <span className="feature">✓ Secure Payment</span>
-                          <span className="feature">✓ No Additional Fees</span>
-                        </div>
+                <div className="mt-2 rounded-lg border border-emerald-100 bg-white p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-20 overflow-hidden rounded bg-white">
+                      <img 
+                        src="https://res.cloudinary.com/dqvsjtkqw/image/upload/v1755521690/download_fab1uz.png" 
+                        alt="M-Pesa"
+                        onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<div class="text-emerald-600 font-bold text-base">M-PESA</div>'; }}
+                        className="h-10 w-auto object-contain"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">M-Pesa Mobile Money</h3>
+                      <p className="text-sm text-gray-700">Fast, secure & instant payment</p>
+                      <div className="mt-1 flex flex-wrap gap-2 text-xs text-emerald-800">
+                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5">✓ Instant Processing</span>
+                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5">✓ Secure Payment</span>
+                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5">✓ No Additional Fees</span>
                       </div>
                     </div>
                   </div>
@@ -605,26 +547,26 @@ const CheckoutPage = () => {
 
                 {/* M-Pesa Details - Always show since it's the only payment method */}
                 {true && (
-                  <div className="mpesa-details">
-                    <h3>M-Pesa Payment Details</h3>
-                    <div className="form-group">
-                      <label>M-Pesa Phone Number *</label>
+                  <div className="mt-3 rounded-lg border border-emerald-100 bg-white p-4">
+                    <h3 className="font-semibold text-gray-900">M-Pesa Payment Details</h3>
+                    <div className="mt-2">
+                      <label className="block text-sm font-medium text-gray-700">M-Pesa Phone Number *</label>
                       <input
                         type="tel"
                         value={mpesaPhone}
                         onChange={(e) => setMpesaPhone(e.target.value)}
                         placeholder="254712345678"
-                        className={errors.mpesaPhone ? 'error' : ''}
+                        className={`mt-1 w-full rounded-md border ${errors.mpesaPhone ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
                       />
-                      {errors.mpesaPhone && <span className="error-text">{errors.mpesaPhone}</span>}
-                      <small>Enter your M-Pesa registered phone number (e.g., 0712345678, +254712345678, or 254712345678)</small>
-                      <div className="phone-format-info">
-                        <p><strong>📱 Phone Number Format:</strong></p>
-                        <ul>
-                          <li>✅ <strong>0712345678</strong> (will be converted to 254712345678)</li>
-                          <li>✅ <strong>+254712345678</strong> (will be converted to 254712345678)</li>
-                          <li>✅ <strong>254712345678</strong> (already in correct format)</li>
-                          <li>❌ <strong>712345678</strong> (missing country code)</li>
+                      {errors.mpesaPhone && <span className="text-sm text-red-600">{errors.mpesaPhone}</span>}
+                      <small className="mt-1 block text-gray-600">Enter your M-Pesa registered phone number (e.g., 0712345678, +254712345678, or 254712345678)</small>
+                      <div className="mt-2 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                        <p className="font-semibold">📱 Phone Number Format:</p>
+                        <ul className="list-disc pl-5">
+                          <li>✅ 0712345678 (will be converted to 254712345678)</li>
+                          <li>✅ +254712345678 (will be converted to 254712345678)</li>
+                          <li>✅ 254712345678 (already in correct format)</li>
+                          <li>❌ 712345678 (missing country code)</li>
                         </ul>
                       </div>
                     </div>
@@ -634,13 +576,13 @@ const CheckoutPage = () => {
             )}
 
             {currentStep === 3 && (
-              <div className="review-step">
-                <h2>Review Your Order</h2>
+              <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900">Review Your Order</h2>
                 
-                <div className="review-sections">
-                  <div className="review-section">
-                    <h3>Shipping Information</h3>
-                    <div className="review-content">
+                <div className="mt-3 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border border-gray-200 bg-white p-4">
+                    <h3 className="font-semibold text-gray-900">Shipping Information</h3>
+                    <div className="mt-2 text-sm text-gray-700">
                       <p><strong>{shippingInfo.firstName} {shippingInfo.lastName}</strong></p>
                       <p>{shippingInfo.email}</p>
                       <p>{shippingInfo.phone}</p>
@@ -649,26 +591,26 @@ const CheckoutPage = () => {
                     </div>
                   </div>
 
-                  <div className="review-section">
-                    <h3>Payment Method</h3>
-                    <div className="review-content">
+                  <div className="rounded-lg border border-gray-200 bg-white p-4">
+                    <h3 className="font-semibold text-gray-900">Payment Method</h3>
+                    <div className="mt-2 text-sm text-gray-700">
                       <p>M-Pesa Mobile Money ({mpesaPhone})</p>
                       <small>Instant & Secure Payment</small>
                     </div>
                   </div>
 
-                  <div className="review-section">
-                    <h3>Order Items</h3>
-                    <div className="review-items">
+                  <div className="rounded-lg border border-gray-200 bg-white p-4 md:col-span-2">
+                    <h3 className="font-semibold text-gray-900">Order Items</h3>
+                    <div className="mt-2 space-y-2">
                       {cartItems.map(item => (
-                        <div key={item.id} className="review-item">
-                          <img src={item.image} alt={item.name} />
-                          <div className="item-details">
-                            <h4>{item.name}</h4>
-                            <p>Qty: {item.quantity}</p>
+                        <div key={item.id} className="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-md border border-emerald-100 bg-white p-3">
+                          <img className="h-16 w-16 rounded object-cover" src={item.image} alt={item.name} />
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-900">{item.name}</h4>
+                            <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
                           </div>
-                          <div className="item-price">
-                            KSH {(item.price * item.quantity).toLocaleString()}
+                          <div className="text-sm font-semibold text-gray-900">
+                            KSH {(toNumber(item.price) * item.quantity).toLocaleString()}
                           </div>
                         </div>
                       ))}
@@ -677,7 +619,7 @@ const CheckoutPage = () => {
                 </div>
 
                 {errors.submit && (
-                  <div className="error-message">
+                  <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
                     {errors.submit}
                   </div>
                 )}
@@ -685,20 +627,20 @@ const CheckoutPage = () => {
             )}
 
             {/* Navigation Buttons */}
-            <div className="checkout-navigation">
+            <div className="mt-4 flex items-center justify-between">
               {currentStep > 1 && (
-                <button className="back-btn" onClick={handleBack}>
+                <button className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50" onClick={handleBack}>
                   ← Back
                 </button>
               )}
               
               {currentStep < 3 ? (
-                <button className="next-btn" onClick={handleNext}>
+                <button className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600" onClick={handleNext}>
                   Continue →
                 </button>
               ) : (
                 <button 
-                  className="place-order-btn" 
+                  className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-60" 
                   onClick={handlePlaceOrder}
                   disabled={loading || total <= 0}
                 >
@@ -709,30 +651,28 @@ const CheckoutPage = () => {
           </div>
 
           {/* Order Summary Sidebar */}
-          <div className="checkout-sidebar">
-            <div className="order-summary">
-              <h3>Order Summary</h3>
+          <div className="md:col-span-1">
+            <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900">Order Summary</h3>
               
-              <div className="summary-items">
+              <div className="mt-3 space-y-2">
                 {cartItems.map(item => (
-                  <div key={item.id} className="summary-item">
-                    <img src={item.image} alt={item.name} />
-                    <div className="item-details">
-                      <span className="item-name">{item.name}</span>
-                      <span className="item-qty">Qty: {item.quantity}</span>
+                  <div key={item.id} className="grid grid-cols-[48px_1fr_auto] items-center gap-3 rounded-md border border-emerald-100 bg-white p-2">
+                    <img className="h-12 w-12 rounded object-cover" src={item.image} alt={item.name} />
+                    <div>
+                      <span className="block text-sm font-medium text-gray-900">{item.name}</span>
+                      <span className="block text-xs text-gray-600">Qty: {item.quantity}</span>
                     </div>
-                    <span className="item-total">
-                      KSH {(item.price * item.quantity).toLocaleString()}
+                    <span className="text-sm font-semibold text-gray-900">
+                      KSH {(toNumber(item.price) * item.quantity).toLocaleString()}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="summary-totals">
-                <div className="total-row final-total">
-                  <span>Total:</span>
-                  <span>KSH {total.toLocaleString()}</span>
-                </div>
+              <div className="mt-4 flex items-center justify-between border-t pt-2 text-base font-semibold">
+                <span>Total:</span>
+                <span>KSH {total.toLocaleString()}</span>
               </div>
             </div>
           </div>

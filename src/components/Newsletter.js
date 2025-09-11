@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { newsletterService } from '../services/newsletterService';
-import './Newsletter.css';
+import { useAuth } from '../context/AuthContext';
+// Tailwind conversion: removed external CSS import
 
 const Newsletter = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const { currentUser, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [honeypot, setHoneypot] = useState('');
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
 
   const [ref, inView] = useInView({
     threshold: 0.1,
@@ -45,6 +48,17 @@ const Newsletter = () => {
       
       // Show success message
       setSubscribed(true);
+      setSubscriptionInfo({
+        email,
+        message: result.message || 'Subscribed successfully',
+        mode: result.mode || 'online'
+      });
+      // If user is logged in and email matches, mark newsletter true in profile
+      try {
+        if (currentUser && currentUser.email && currentUser.email.toLowerCase() === email.toLowerCase()) {
+          updateUser({ newsletter: true });
+        }
+      } catch(_) {}
       setEmail('');
       setHoneypot('');
       
@@ -84,71 +98,68 @@ const Newsletter = () => {
   return (
     <motion.section 
       ref={ref}
-      className="newsletter"
+      className="mt-8"
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       variants={containerVariants}
     >
-      <div className="newsletter-container">
-        <div className="newsletter-content">
-          <div className="newsletter-text">
-            <h2 className="newsletter-title">Get Discount 30% Off</h2>
-            <p className="newsletter-subtitle">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="grid items-center gap-6 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm md:grid-cols-2">
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Get Discount 30% Off</h2>
+            <p className="mt-1 text-gray-700">
               It is a long established fact that a reader will be distracted by the readable 
               content of natural health tips, exclusive offers, and wellness insights delivered to your inbox.
             </p>
-            <div className="newsletter-benefits">
-              <div className="benefit-item">
-                <span className="benefit-icon">🎁</span>
-                <span>Exclusive Offers</span>
-              </div>
-              <div className="benefit-item">
-                <span className="benefit-icon">📚</span>
-                <span>Health Tips</span>
-              </div>
-              <div className="benefit-item">
-                <span className="benefit-icon">⚡</span>
-                <span>Early Access</span>
-              </div>
+            <div className="mt-3 flex flex-wrap gap-3 text-emerald-800">
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm">🎁 Exclusive Offers</span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm">📚 Health Tips</span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm">⚡ Early Access</span>
             </div>
           </div>
 
-          <div className="newsletter-form-wrapper">
+          <div>
             {subscribed ? (
-              <div className="success-message">
-                <div className="success-icon">✓</div>
-                <h3>Welcome to our community!</h3>
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+                <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white">✓</div>
+                <h3 className="text-lg font-semibold">Welcome to our community!</h3>
                 <p>You've been successfully subscribed to our newsletter.</p>
                 <p>Check your email for your 30% discount code and future updates!</p>
+                {subscriptionInfo && (
+                  <div className="mt-2 space-y-1 text-sm">
+                    <p><strong>Email:</strong> {subscriptionInfo.email}</p>
+                    <p><strong>Status:</strong> {subscriptionInfo.message}</p>
+                    {subscriptionInfo.mode === 'offline' && (
+                      <p><em>Saved locally until service is available.</em></p>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="newsletter-form">
+              <form onSubmit={handleSubmit} className="space-y-2">
                 {error && (
-                  <div className="error-message">
+                  <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
                     {error}
                   </div>
                 )}
                 
-                <div className="form-group">
+                <div className="flex w-full gap-2">
                   <input
                     type="email"
                     placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="newsletter-input"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200"
                     required
                     disabled={loading}
                   />
                   <button 
                     type="submit" 
-                    className="newsletter-submit"
+                    className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-60"
                     disabled={loading}
                   >
                     {loading ? (
-                      <>
-                        <span className="spinner"></span>
-                        Subscribing...
-                      </>
+                      'Subscribing...'
                     ) : (
                       'Get 30% Off'
                     )}
@@ -166,18 +177,12 @@ const Newsletter = () => {
                   aria-label="Leave this field empty if you're human"
                 />
                 
-                <p className="newsletter-privacy">
+                <p className="text-sm text-gray-600">
                   We respect your privacy. Unsubscribe at any time.
                 </p>
               </form>
             )}
           </div>
-        </div>
-
-        <div className="newsletter-decorations">
-          <div className="decoration decoration-1"></div>
-          <div className="decoration decoration-2"></div>
-          <div className="decoration decoration-3"></div>
         </div>
       </div>
     </motion.section>

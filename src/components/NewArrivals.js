@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import LazyLoad from 'react-lazyload';
 import QuickViewModal from './QuickViewModal';
-import './NewArrivals.css';
 
 const NewArrivals = ({ onNavigateToShop, onQuickView, onProductView }) => {
   const navigate = useNavigate();
@@ -20,7 +19,7 @@ const NewArrivals = ({ onNavigateToShop, onQuickView, onProductView }) => {
     {
       id: 1,
       name: "Premium Organic Green Tea Collection",
-      price: "2,499",
+      price: "1",
       originalPrice: "3,499",
       image: "https://res.cloudinary.com/djksfayfu/image/upload/v1753302948/high-angle-lemon-ginger-slices-cutting-board_sox2gh.jpg",
       category: "Tea Blends",
@@ -34,7 +33,7 @@ const NewArrivals = ({ onNavigateToShop, onQuickView, onProductView }) => {
     {
       id: 2,
       name: "Himalayan Herbal Wellness Mix",
-      price: "1,850",
+      price: "200",
       originalPrice: "2,500",
       image: "https://res.cloudinary.com/djksfayfu/image/upload/v1748982986/basket-full-vegetables_mp02db.jpg",
       category: "Herbs & Spices",
@@ -132,20 +131,6 @@ const NewArrivals = ({ onNavigateToShop, onQuickView, onProductView }) => {
   ];
 
   const handleAddToCart = (product) => {
-    if (!currentUser) {
-      // Show custom login alert
-      setLoginAlert({
-        show: true,
-        message: 'Please login to add items to cart'
-      });
-      
-      // Auto-hide after 3 seconds
-      setTimeout(() => {
-        setLoginAlert({ show: false, message: '' });
-      }, 3000);
-      return;
-    }
-
     const cartItem = {
       id: product.id,
       name: product.name,
@@ -183,97 +168,95 @@ const NewArrivals = ({ onNavigateToShop, onQuickView, onProductView }) => {
   };
 
   return (
-    <section className="new-arrivals">
-      <div className="section-header">
-        <h2 className="section-title">New Products</h2>
-        <p className="section-subtitle">Discover our latest natural wellness products</p>
-      </div>
+    <section className="py-12 bg-white">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">New Products</h2>
+          <p className="text-gray-600 mt-1">Discover our latest natural wellness products</p>
+        </div>
 
-      <div className="products-grid">
-        {products.map((product) => (
-          <div key={product.id} className="new-arrival-product-card">
-            {product.sale && <span className="sale-badge">Sale!</span>}
-            
-            <div className="product-image">
-              <LazyLoad height={200} offset={100} placeholder={<div className="image-placeholder">Loading...</div>}>
-                <img src={product.image} alt={product.name} />
-              </LazyLoad>
-              <div className="product-overlay">
-                <div className="hover-actions">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {products.map((product) => (
+            <div key={product.id} className="group rounded-md border border-gray-100 shadow-sm overflow-hidden bg-white">
+              {product.sale && <span className="absolute m-2 inline-flex items-center justify-center rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white">Sale!</span>}
+
+              <div className="relative">
+                <LazyLoad height={180} offset={100} placeholder={<div className="h-44 bg-gray-100"/>}>
+                  <img src={product.image} alt={product.name} className="h-44 w-full object-cover" />
+                </LazyLoad>
+                <button 
+                  className="absolute right-2 top-2 z-10 inline-flex items-center justify-center rounded-full bg-white/90 text-gray-800 w-8 h-8 shadow hover:bg-white"
+                  title="Quick view"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickView(product); }}
+                >
+                  <HiEye />
+                </button>
+
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition pointer-events-none"/>
+                <div className="absolute bottom-2 right-2">
                   <button 
-                    className="icon-action"
+                    className="inline-flex items-center justify-center rounded-full bg-emerald-600 text-white w-9 h-9 shadow hover:bg-emerald-700"
                     title="Add to cart"
                     onClick={() => handleAddToCart(product)}
                   >
                     <HiPlus />
                   </button>
-                  <button 
-                    className="icon-action"
-                    title="Quick view"
-                    onClick={() => handleQuickView(product)}
-                  >
-                    <HiEye />
-                  </button>
                 </div>
               </div>
-            </div>
 
-            <div className="product-details">
-              <div className="product-category-badge">{product.category}</div>
-              <h3 className="product-name">{product.name}</h3>
+              <div className="p-3">
+                <div className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">{product.category}</div>
+                <h3 className="mt-2 line-clamp-2 font-semibold text-sm text-gray-900 group-hover:text-emerald-700">{product.name}</h3>
 
-              <div className="product-price">
-                {product.originalPrice && (
-                  <span className="original-price">KSH {product.originalPrice}</span>
-                )}
-                <span className="current-price">KSH {product.price}</span>
+                <div className="mt-1 flex items-center gap-2">
+                  {product.originalPrice && (
+                    <span className="text-xs text-gray-400 line-through">KES {product.originalPrice}</span>
+                  )}
+                  <span className="text-base font-semibold text-gray-900">KES {product.price}</span>
+                </div>
+                <button 
+                  className="mt-2 w-full inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-3 py-1.5 text-sm font-medium shadow hover:bg-emerald-600"
+                  onClick={() => handleAddToCart(product)}
+                >
+                  Add to Cart
+                </button>
               </div>
-              {/* Add to Cart button (visible on mobile too) */}
-              <button 
-                className="add-to-cart-btn"
-                onClick={() => handleAddToCart(product)}
-              >
-                Add to Cart
-              </button>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <button 
+            className="inline-flex items-center gap-2 rounded-full bg-emerald-700 text-white px-6 py-3 text-sm font-semibold shadow hover:bg-emerald-600"
+            onClick={() => onNavigateToShop && onNavigateToShop()}
+          >
+            Shop More Products
+            <span>→</span>
+          </button>
+        </div>
       </div>
 
-      {/* Shop More Button */}
-      <div className="shop-more-section">
-        <button 
-          className="shop-more-btn"
-          onClick={() => onNavigateToShop && onNavigateToShop()}
-        >
-          Shop More Products
-          <span className="arrow">→</span>
-        </button>
-      </div>
-
-      {/* Cart Notification */}
       {cartNotification.show && (
-        <div className="cart-notification">
-          <div className="notification-content">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="rounded-md bg-emerald-600 text-white px-4 py-2 shadow">
             <span>✅ {cartNotification.productName} added to cart!</span>
           </div>
         </div>
       )}
 
-      {/* Login Alert */}
       {loginAlert.show && (
-        <div className="login-alert">
-          <div className="alert-content">
-            <span className="alert-icon">🔒</span>
-            <span className="alert-message">{loginAlert.message}</span>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="flex items-center gap-3 rounded-md bg-white px-4 py-2 shadow border">
+            <span className="text-xl">🔒</span>
+            <span className="text-sm text-gray-800">{loginAlert.message}</span>
             <button 
-              className="login-now-btn"
+              className="inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-3 py-1 text-sm hover:bg-emerald-600"
               onClick={() => navigate('/login')}
             >
               Login Now
             </button>
             <button 
-              className="close-alert-btn"
+              className="text-gray-500 hover:text-gray-700"
               onClick={() => setLoginAlert({ show: false, message: '' })}
             >
               ×
@@ -282,7 +265,6 @@ const NewArrivals = ({ onNavigateToShop, onQuickView, onProductView }) => {
         </div>
       )}
 
-      {/* Quick View Modal */}
       <QuickViewModal
         product={quickViewProduct}
         isOpen={showQuickView}

@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import './PromotionalBanners.css';
 
 const PromotionalBanners = () => {
+  const navigate = useNavigate();
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true
@@ -44,7 +46,7 @@ const PromotionalBanners = () => {
               <div className="discount-badge">50% OFF</div>
               <h3>Enjoy Your Favorite Salad</h3>
               <p>Fresh, organic greens and vegetables delivered to your door</p>
-              <button className="view-products-btn">View Products</button>
+              <button className="view-products-btn" onClick={() => navigate('/shop?category=herbs-spices')}>View Products</button>
             </div>
             <div className="banner-image">
               <img 
@@ -60,7 +62,7 @@ const PromotionalBanners = () => {
               <div className="discount-badge">50% OFF</div>
               <h3>Create Fresh Drinks</h3>
               <p>Natural juices and smoothie ingredients for healthy living</p>
-              <button className="view-products-btn">View Products</button>
+              <button className="view-products-btn" onClick={() => navigate('/shop?category=tea-blends')}>View Products</button>
             </div>
             <div className="banner-image">
               <img 

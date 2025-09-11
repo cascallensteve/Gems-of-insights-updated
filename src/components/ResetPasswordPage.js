@@ -56,8 +56,7 @@ const ResetPasswordPage = () => {
         body: JSON.stringify({
           email: formData.email,
           token: formData.token,
-          password: formData.password,
-          confirm_password: formData.confirmPassword
+          new_password: formData.password
         })
       });
 

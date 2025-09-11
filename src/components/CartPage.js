@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import QuickView from './QuickView';
-import './CartPage.css';
+// Tailwind conversion: removed external CSS import
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -79,36 +79,33 @@ const CartPage = () => {
   };
 
   return (
-    <div className="cart-page">
-      <div className="cart-page-container">
+    <div className="mt-[64px] md:mt-[72px]">
+      <div className="mx-auto max-w-6xl px-4">
         {/* Header */}
-        <div className="cart-page-header">
-          <div className="cart-title-section">
-            <h1>Shopping Cart</h1>
-            <div className="cart-count">{cartItems.length} items</div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-end gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Shopping Cart</h1>
+            <div className="text-sm text-gray-600">{cartItems.length} items</div>
           </div>
-          <button className="back-to-shopping-btn" onClick={() => navigate(-1)}>
+          <button className="text-sm text-gray-600 hover:text-emerald-700" onClick={() => navigate(-1)}>
             ← Back to Shopping
           </button>
         </div>
 
         {cartItems.length === 0 ? (
-          <div className="empty-cart-page">
-            <div className="empty-cart-illustration">
-              <div className="empty-cart-icon">🛒</div>
-              <h2>Your cart is empty</h2>
-              <p>Discover our natural remedies and wellness products to start your healthy journey!</p>
-            </div>
-            
-            <div className="suggested-actions">
+          <div className="mt-4 rounded-xl border border-emerald-100 bg-white p-6 text-center text-gray-700">
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-2xl">🛒</div>
+            <h2 className="text-lg font-semibold text-gray-900">Your cart is empty</h2>
+            <p>Discover our natural remedies and wellness products to start your healthy journey!</p>
+            <div className="mt-4 flex items-center justify-center gap-2">
               <button 
-                className="primary-action-btn"
+                className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"
                 onClick={() => navigate('/shop')}
               >
                 🌿 Browse Products
               </button>
               <button 
-                className="secondary-action-btn"
+                className="inline-flex items-center justify-center rounded-md border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
                 onClick={() => navigate('/trending-products')}
               >
                 ⭐ View Trending
@@ -116,94 +113,77 @@ const CartPage = () => {
             </div>
           </div>
         ) : (
-          <div className="cart-page-content">
-            {/* Cart Items Section */}
-            <div className="cart-items-section">
-              <div className="section-header">
-                <h2>Your Items</h2>
+          <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Left: Items */}
+            <div className="lg:col-span-2">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Your Items</h2>
                 <button 
-                  className="clear-cart-btn"
+                  className="text-sm text-red-600 hover:underline"
                   onClick={clearCart}
                 >
                   Clear All
                 </button>
               </div>
 
-              <div className="cart-items-grid">
+              <div className="space-y-3">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="cart-item-card">
-                    <div className="item-image-container">
-                      <img src={item.image} alt={item.name} className="item-image" />
+                  <div key={item.id} className="grid grid-cols-[96px_1fr_auto] items-center gap-4 rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+                    <div className="relative">
+                      <img src={item.image} alt={item.name} className="h-24 w-24 rounded-md object-cover" />
                       <button 
-                        className="quick-view-overlay"
+                        className="absolute bottom-1 left-1 z-10 rounded-md bg-black/60 px-2 py-1 text-xs text-white hover:bg-black/70"
                         onClick={() => handleQuickView(item)}
                       >
                         👁️ Quick View
                       </button>
                     </div>
-                    
-                    <div className="item-info">
-                      <h3 className="item-name">{item.name}</h3>
-                      <p className="item-category">{item.category}</p>
-                      
+
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-900">{item.name}</h3>
+                      <p className="text-sm text-gray-600">{item.category}</p>
                       {item.diseases && (
-                        <div className="item-benefits">
-                          <span className="benefits-label">Treats:</span>
-                          <div className="benefits-tags">
+                        <div className="mt-2">
+                          <span className="text-xs font-medium text-gray-700">Treats:</span>
+                          <div className="mt-1 flex flex-wrap gap-1">
                             {item.diseases.slice(0, 3).map((disease, index) => (
-                              <span key={index} className="benefit-tag">{disease}</span>
+                              <span key={index} className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700 ring-1 ring-emerald-100">{disease}</span>
                             ))}
                             {item.diseases.length > 3 && (
-                              <span className="benefit-tag more">+{item.diseases.length - 3} more</span>
+                              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700 ring-1 ring-emerald-100">+{item.diseases.length - 3} more</span>
                             )}
                           </div>
                         </div>
                       )}
                     </div>
 
-                    <div className="item-controls">
-                      <div className="quantity-section">
-                        <label>Quantity:</label>
-                        <div className="quantity-controls">
-                          <button 
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            className="quantity-btn decrease"
-                            disabled={item.quantity <= 1}
-                          >
-                            −
-                          </button>
-                          <span className="quantity-display">{item.quantity}</span>
-                          <button 
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                            className="quantity-btn increase"
-                          >
-                            +
-                          </button>
-                        </div>
+                    <div className="text-right">
+                      <div className="mb-2 text-sm text-gray-700">
+                        <div>Unit: KSH {typeof item.price === 'string' ? item.price : Number(item.price).toLocaleString()}</div>
+                        <div className="font-semibold">Total: KSH {(parseFloat((typeof item.price === 'string' ? item.price.replace(/[^\d.-]/g, '') : item.price)) * item.quantity).toLocaleString()}</div>
                       </div>
-                      
-                      <div className="price-section">
-                        <div className="unit-price">
-                          KSH {item.price} each
-                        </div>
-                        <div className="total-price">
-                          KSH {(parseFloat(item.price.replace(',', '')) * item.quantity).toLocaleString()}
-                        </div>
+                      <div className="inline-flex items-center rounded-md border border-gray-300">
+                        <button 
+                          className="px-2 py-1 text-lg disabled:opacity-40"
+                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          −
+                        </button>
+                        <span className="px-3 text-sm">{item.quantity}</span>
+                        <button 
+                          className="px-2 py-1 text-lg"
+                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                        >
+                          +
+                        </button>
                       </div>
-
                       <button 
-                        className="remove-item-btn"
-                        onClick={async () => {
-                          try {
-                            await removeFromCart(item.id);
-                          } catch (error) {
-                            console.error('Failed to remove item:', error);
-                            // Could show a toast notification here
-                          }
-                        }}
+                        className="mt-2 block w-full text-xs text-red-600 hover:underline"
+                        onClick={() => removeFromCart(item.id)}
                         title="Remove from cart"
                       >
-                        🗑️
+                        Remove
                       </button>
                     </div>
                   </div>
@@ -211,39 +191,36 @@ const CartPage = () => {
               </div>
             </div>
 
-            {/* Order Summary Section */}
-            <div className="order-summary-section">
-              <div className="summary-card">
-                <h2>Order Summary</h2>
-                
-                <div className="summary-details">
-                  <div className="summary-row">
+            {/* Right: Summary */}
+            <div className="lg:col-span-1">
+              <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+                <h2 className="mb-2 text-lg font-semibold text-gray-900">Order Summary</h2>
+                <div className="space-y-1 text-sm">
+                  <div className="flex items-center justify-between">
                     <span>Subtotal ({cartItems.length} items):</span>
                     <span>KSH {getCartTotal().toLocaleString()}</span>
                   </div>
-                  
-                  <div className="summary-row">
+                  <div className="flex items-center justify-between">
                     <span>Tax:</span>
                     <span>Included</span>
                   </div>
                 </div>
 
-                {/* Shipping Options */}
-                <div className="shipping-section">
-                  <div className="shipping-header">
-                    <h3>Shipping Options</h3>
+                <div className="mt-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-900">Shipping Options</h3>
                     <button 
-                      className="toggle-shipping"
+                      className="text-sm text-emerald-700 hover:underline"
                       onClick={() => setShowShippingOptions(!showShippingOptions)}
                     >
-                      {showShippingOptions ? '↑' : '↓'}
+                      {showShippingOptions ? 'Hide' : 'Edit'}
                     </button>
                   </div>
-                  
+
                   {showShippingOptions && (
-                    <div className="shipping-options">
+                    <div className="space-y-2">
                       {shippingOptions.map((option) => (
-                        <label key={option.id} className="shipping-option">
+                        <label key={option.id} className="flex cursor-pointer items-start gap-3 rounded-lg border border-emerald-100 p-3 hover:bg-emerald-50/50">
                           <input
                             type="radio"
                             name="shipping"
@@ -251,91 +228,86 @@ const CartPage = () => {
                             checked={selectedShipping === option.id}
                             onChange={(e) => setSelectedShipping(e.target.value)}
                           />
-                          <div className="option-content">
-                            <div className="option-header">
-                              <span className="option-icon">{option.icon}</span>
-                              <span className="option-name">{option.name}</span>
-                              <span className="option-price">
-                                {option.price === 0 ? 'FREE' : `KSH ${option.price}`}
-                              </span>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">{option.icon}</span>
+                                <span className="text-sm font-medium text-gray-900">{option.name}</span>
+                              </div>
+                              <span className="text-sm font-semibold text-gray-900">{option.price === 0 ? 'FREE' : `KSH ${option.price}`}</span>
                             </div>
-                            <div className="option-description">{option.description}</div>
+                            <div className="text-xs text-gray-600">{option.description}</div>
                           </div>
                         </label>
                       ))}
                     </div>
                   )}
-                  
-                  <div className="selected-shipping-summary">
-                    <div className="summary-row">
+
+                  <div className="mt-2 space-y-1 text-sm">
+                    <div className="flex items-center justify-between">
                       <span>Shipping:</span>
-                      <span>
-                        {getSelectedShippingPrice() === 0 ? 'FREE' : `KSH ${getSelectedShippingPrice()}`}
-                      </span>
+                      <span>{getSelectedShippingPrice() === 0 ? 'FREE' : `KSH ${getSelectedShippingPrice()}`}</span>
                     </div>
-                    
-                    <div className="delivery-estimate">
-                      <span>📅 Estimated delivery: {estimatedDelivery()}</span>
+                    <div className="rounded-md bg-emerald-50/60 p-2 text-xs text-gray-700">
+                      📅 Estimated delivery: {estimatedDelivery()}
                     </div>
                   </div>
                 </div>
 
-                <div className="total-section">
-                  <div className="summary-row total">
+                <div className="mt-4 border-t pt-3">
+                  <div className="flex items-center justify-between text-base font-semibold">
                     <span>Total:</span>
                     <span>KSH {getFinalTotal().toLocaleString()}</span>
                   </div>
                 </div>
 
-                <div className="checkout-actions">
+                <div className="mt-3">
                   <button 
-                    className="checkout-btn"
+                    className="inline-flex w-full items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"
                     onClick={handleProceedToCheckout}
                   >
                     Proceed to Checkout
                   </button>
-                  
                   <button 
-                    className="continue-shopping-btn"
+                    className="mt-2 inline-flex w-full items-center justify-center rounded-md border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
                     onClick={() => navigate('/shop')}
                   >
                     Continue Shopping
                   </button>
                 </div>
 
-                {/* Security Badges */}
-                <div className="security-badges">
-                  <div className="badge">
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs text-gray-700">
+                  <div className="rounded-md border border-emerald-100 bg-emerald-50/60 p-2">
                     <span>🔒</span>
-                    <span>Secure Checkout</span>
+                    <span className="ml-1">Secure Checkout</span>
                   </div>
-                  <div className="badge">
+                  <div className="rounded-md border border-emerald-100 bg-emerald-50/60 p-2">
                     <span>↩️</span>
-                    <span>Free Returns</span>
+                    <span className="ml-1">Free Returns</span>
                   </div>
-                  <div className="badge">
+                  <div className="rounded-md border border-emerald-100 bg-emerald-50/60 p-2">
                     <span>💳</span>
-                    <span>M-Pesa Accepted</span>
+                    <span className="ml-1">M-Pesa Accepted</span>
                   </div>
                 </div>
               </div>
 
-              {/* Recommended Products */}
-              <div className="recommendations-card">
-                <h3>You might also like</h3>
-                <div className="recommended-products">
-                  <div className="recommended-item">
-                    <img src="https://res.cloudinary.com/djksfayfu/image/upload/v1753303006/turmeric-powder_kpfh3p.jpg" alt="Turmeric" />
-                    <div className="recommended-info">
-                      <h4>Organic Turmeric</h4>
-                      <p>KSH 850</p>
+              {/* Recommendations */}
+              <div className="mt-6 rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+                <h3 className="mb-3 text-sm font-semibold text-gray-900">You might also like</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 rounded-lg border border-emerald-100 p-2">
+                    <img className="h-12 w-12 rounded object-cover" src="https://res.cloudinary.com/djksfayfu/image/upload/v1753303006/turmeric-powder_kpfh3p.jpg" alt="Turmeric" />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">Organic Turmeric</div>
+                      <div className="text-xs text-gray-600">KSH 850</div>
                     </div>
                   </div>
-                  <div className="recommended-item">
-                    <img src="https://res.cloudinary.com/djksfayfu/image/upload/v1753302948/high-angle-lemon-ginger-slices-cutting-board_sox2gh.jpg" alt="Ginger" />
-                    <div className="recommended-info">
-                      <h4>Fresh Ginger</h4>
-                      <p>KSH 650</p>
+                  <div className="flex items-center gap-3 rounded-lg border border-emerald-100 p-2">
+                    <img className="h-12 w-12 rounded object-cover" src="https://res.cloudinary.com/djksfayfu/image/upload/v1753302948/high-angle-lemon-ginger-slices-cutting-board_sox2gh.jpg" alt="Ginger" />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">Fresh Ginger</div>
+                      <div className="text-xs text-gray-600">KSH 650</div>
                     </div>
                   </div>
                 </div>
@@ -353,6 +325,11 @@ const CartPage = () => {
           onClose={() => {
             setShowQuickView(false);
             setQuickViewProduct(null);
+          }}
+          onOpenFullView={(product) => {
+            setShowQuickView(false);
+            setQuickViewProduct(null);
+            navigate(`/product/${product.id}`);
           }}
         />
       )}

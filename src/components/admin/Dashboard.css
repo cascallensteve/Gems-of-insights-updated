@@ -583,6 +583,56 @@
   }
 }
 
+/* Simple table for enrollments */
+.simple-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.simple-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.simple-table th,
+.simple-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.simple-table thead th {
+  background: #f9fafb;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .simple-table thead {
+    display: none;
+  }
+  .simple-table,
+  .simple-table tbody,
+  .simple-table tr,
+  .simple-table td {
+    display: block;
+    width: 100%;
+  }
+  .simple-table tr {
+    margin-bottom: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .simple-table td {
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .simple-table td:last-child {
+    border-bottom: none;
+  }
+}
+
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;

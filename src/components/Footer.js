@@ -1,8 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { newsletterService } from '../services/newsletterService';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const Footer = () => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const { currentUser, updateUser } = useAuth();
+
+  const handleFooterSubscribe = async (e) => {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+    if (!email) {
+      setError('Please enter your email');
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await newsletterService.subscribe(email);
+      setMessage(res.message || 'Subscribed successfully!');
+      try {
+        if (currentUser && currentUser.email && currentUser.email.toLowerCase() === email.toLowerCase()) {
+          updateUser({ newsletter: true });
+        }
+      } catch(_) {}
+      setEmail('');
+      setTimeout(() => setMessage(''), 6000);
+    } catch (err) {
+      setError(err.message || 'Subscription failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <footer className="footer">
       <div className="footer-container">
@@ -172,9 +206,17 @@ const Footer = () => {
             <div className="footer-newsletter">
               <h5>Health Tips Newsletter</h5>
               <p>Get weekly natural health tips and exclusive offers</p>
-              <form className="newsletter-form">
-                <input type="email" placeholder="your.email@example.com" required />
-                <button type="submit">Subscribe</button>
+              {message && <div className="footer-newsletter-success">{message}</div>}
+              {error && <div className="footer-newsletter-error">{error}</div>}
+              <form className="newsletter-form" onSubmit={handleFooterSubscribe}>
+                <input 
+                  type="email" 
+                  placeholder="your.email@example.com" 
+                  required 
+                  value={email}
+                  onChange={(e)=>setEmail(e.target.value)}
+                />
+                <button type="submit" disabled={loading}>{loading ? 'Subscribing...' : 'Subscribe'}</button>
               </form>
             </div>
 

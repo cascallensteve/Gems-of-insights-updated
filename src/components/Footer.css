@@ -322,6 +322,26 @@
   font-size: 0.9rem;
 }
 
+.footer-newsletter-success {
+  background: #e6fffa;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.footer-newsletter-error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
 .newsletter-form {
   display: flex;
   gap: 10px;

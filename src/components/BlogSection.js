@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { blogService } from '../services/blogService';
 import LoadingDots from './LoadingDots';
 import LikeButton from './LikeButton';
-import './BlogSection.css';
 
 const BlogSection = () => {
   const navigate = useNavigate();
@@ -146,53 +145,51 @@ const BlogSection = () => {
   return (
     <motion.section 
       ref={ref}
-      className="blog-section"
+      className="py-12 bg-white"
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       variants={containerVariants}
     >
-      <div className="container">
-        <motion.div className="section-header" variants={itemVariants}>
-          <h2>Latest Updates</h2>
-          <p>Fresh insights on natural health, wellness tips, and product news</p>
+      <div className="max-w-7xl mx-auto px-4">
+        <motion.div className="text-center mb-8" variants={itemVariants}>
+          <h2 className="text-2xl font-bold text-gray-900">Latest Updates</h2>
+          <p className="text-gray-600 mt-1">Fresh insights on natural health, wellness tips, and product news</p>
         </motion.div>
 
         {loading ? (
-          <div className="blog-loading">
+          <div className="text-center">
             <LoadingDots text="Loading latest posts..." size="medium" />
           </div>
         ) : (
-          <motion.div className="blog-grid" variants={containerVariants}>
+          <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" variants={containerVariants}>
             {blogPosts.map((post) => (
             <motion.article 
               key={post.id} 
-              className="blog-card"
+              className="group rounded-md border border-gray-100 shadow-sm overflow-hidden bg-white"
               variants={itemVariants}
               whileHover={{ y: -8 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="blog-image">
-                <img src={post.image} alt={post.title} />
-                <div className="blog-category">{post.category}</div>
+              <div className="relative">
+                <img src={post.image} alt={post.title} className="h-44 w-full object-cover" />
+                <div className="absolute left-2 top-2 inline-flex items-center rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-800">{post.category}</div>
               </div>
 
-              <div className="blog-content">
-                <div className="blog-meta">
-                  <span className="blog-date">{post.date}</span>
-                  <span className="blog-separator">•</span>
-                  <span className="blog-read-time">{post.readTime}</span>
+              <div className="p-3">
+                <div className="text-xs text-gray-500 flex items-center gap-2">
+                  <span>{post.date}</span>
+                  <span>•</span>
+                  <span>{post.readTime}</span>
                 </div>
 
-                <h3 className="blog-title">{post.title}</h3>
-                <p className="blog-excerpt">{post.excerpt}</p>
+                <h3 className="mt-1 font-semibold text-gray-900 line-clamp-2">{post.title}</h3>
+                <p className="mt-1 text-sm text-gray-700 line-clamp-3">{post.excerpt}</p>
 
-                <div className="blog-footer">
-                  <div className="blog-author">
-                    <span>By {post.author}</span>
-                  </div>
-                  <div className="blog-actions">
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="text-xs text-gray-600">By {post.author}</div>
+                  <div className="flex items-center gap-2">
                     <button 
-                      className="read-more-btn"
+                      className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
                       onClick={() => handleReadMore(post.id)}
                     >
                       Read More
@@ -214,9 +211,9 @@ const BlogSection = () => {
           </motion.div>
         )}
 
-        <motion.div className="blog-cta" variants={itemVariants}>
+        <motion.div className="mt-8 text-center" variants={itemVariants}>
           <button 
-            className="view-all-blog-btn"
+            className="inline-flex items-center rounded-md bg-emerald-700 text-white px-6 py-3 text-sm font-semibold shadow hover:bg-emerald-600"
             onClick={() => navigate('/blog')}
           >
             View All Blog Posts

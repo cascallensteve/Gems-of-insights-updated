@@ -12,6 +12,217 @@ class PDFService {
     this.companyWebsite = 'www.gemsofinsight.com';
   }
 
+  // --- Tailwind Printable HTML Helpers ---
+  buildHtmlShell(title, body) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${title}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print { .no-print { display: none !important; } }
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+  <div class="mx-auto max-w-4xl p-6">
+    ${body}
+    <div class="mt-6 border-t border-emerald-100 pt-3 text-center text-xs text-gray-500">
+      © ${new Date().getFullYear()} Gems of Insight. All rights reserved.
+    </div>
+  </div>
+  <script>window.onload = () => { setTimeout(() => window.print(), 150); };</script>
+  </body>
+</html>`;
+  }
+
+  openPrint(html) {
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  }
+
+  // --- Admin Inquiries (Printable) ---
+  printInquiry(contact) {
+    const body = `
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold">${this.companyName}</h1>
+          <div class="text-sm text-gray-600">${this.companyTagline}</div>
+        </div>
+        <div class="text-right text-sm text-gray-600">
+          <div>${this.companyEmail}</div>
+          <div>${this.companyPhone}</div>
+        </div>
+      </div>
+      <div class="rounded-xl border border-emerald-100 bg-white p-4">
+        <h2 class="mb-3 text-lg font-semibold text-emerald-700">Inquiry Details</h2>
+        <div class="grid gap-3 sm:grid-cols-2 text-sm">
+          <div><div class="text-gray-500">Name</div><div class="font-medium">${contact?.name || 'N/A'}</div></div>
+          <div><div class="text-gray-500">Email</div><div class="font-medium">${contact?.email || 'N/A'}</div></div>
+          <div><div class="text-gray-500">Phone</div><div class="font-medium">${contact?.phone || 'N/A'}</div></div>
+          <div><div class="text-gray-500">Date</div><div class="font-medium">${new Date(contact?.created_at || Date.now()).toLocaleString()}</div></div>
+        </div>
+        <div class="mt-4">
+          <div class="text-gray-500">Message</div>
+          <div class="mt-1 whitespace-pre-wrap rounded-md border border-gray-100 bg-gray-50 p-3 text-sm">${(contact?.message || '').toString()}</div>
+        </div>
+      </div>`;
+    this.openPrint(this.buildHtmlShell('Inquiry', body));
+  }
+
+  printInquiriesList(contacts, title = 'Inquiries List') {
+    const rows = (contacts || []).map((c, i) => `
+      <tr class="border-b border-gray-100">
+        <td class="px-3 py-2 text-xs text-gray-600">${i + 1}</td>
+        <td class="px-3 py-2 text-sm">${c.name || ''}</td>
+        <td class="px-3 py-2 text-sm">${c.email || ''}</td>
+        <td class="px-3 py-2 text-sm">${c.phone || ''}</td>
+        <td class="px-3 py-2 text-xs text-gray-600">${new Date(c.created_at || Date.now()).toLocaleString()}</td>
+      </tr>`).join('');
+    const body = `
+      <div class="mb-4">
+        <h1 class="text-xl font-bold">${title}</h1>
+        <div class="text-sm text-gray-600">Generated ${new Date().toLocaleString()}</div>
+      </div>
+      <table class="w-full table-auto border-collapse overflow-hidden rounded-md border border-gray-100">
+        <thead class="bg-emerald-50 text-emerald-800">
+          <tr>
+            <th class="px-3 py-2 text-left text-xs font-semibold">#</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold">Name</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold">Email</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold">Phone</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold">Date</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    this.openPrint(this.buildHtmlShell(title, body));
+  }
+
+  // --- Appointments (Printable) ---
+  printAppointment(appointment) {
+    const info = [
+      ['Full Name', appointment?.full_name],
+      ['Email', appointment?.email],
+      ['Phone', appointment?.phone_no || appointment?.phone],
+      ['Concern', appointment?.health_concern],
+      ['Preferred Date', appointment?.preferred_date],
+      ['Preferred Time', appointment?.preferred_time]
+    ]
+      .map(([k, v]) => (
+        `<div><div class="text-gray-500">${k}</div><div class="font-medium">${v || 'N/A'}</div></div>`
+      )).join('');
+    const body = `
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold">Appointment</h1>
+          <div class="text-sm text-gray-600">#${appointment?.id || 'N/A'} • ${new Date().toLocaleDateString()}</div>
+        </div>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2 rounded-xl border border-emerald-100 bg-white p-4">${info}</div>`;
+    this.openPrint(this.buildHtmlShell('Appointment', body));
+  }
+
+  printAppointmentsList(appointments, title = 'Appointments List') {
+    const rows = (appointments || []).map((a, i) => `
+      <tr class="border-b border-gray-100">
+        <td class="px-3 py-2 text-xs text-gray-600">${i + 1}</td>
+        <td class="px-3 py-2 text-sm">${a.full_name || ''}</td>
+        <td class="px-3 py-2 text-sm">${a.email || ''}</td>
+        <td class="px-3 py-2 text-sm">${a.phone_no || a.phone || ''}</td>
+        <td class="px-3 py-2 text-sm">${a.health_concern || ''}</td>
+        <td class="px-3 py-2 text-xs text-gray-600">${a.preferred_date || ''} ${a.preferred_time || ''}</td>
+      </tr>`).join('');
+    const body = `
+      <div class="mb-4">
+        <h1 class="text-xl font-bold">${title}</h1>
+        <div class="text-sm text-gray-600">Generated ${new Date().toLocaleString()}</div>
+      </div>
+      <table class="w-full table-auto border-collapse overflow-hidden rounded-md border border-gray-100">
+        <thead class="bg-emerald-50 text-emerald-800">
+          <tr>
+            <th class="px-3 py-2 text-left text-xs font-semibold">#</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold">Name</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold">Email</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold">Phone</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold">Concern</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold">Preferred</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    this.openPrint(this.buildHtmlShell(title, body));
+  }
+
+  // --- User Profile (PDF) ---
+  generateUserProfilePDF(user) {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    const primary = [46, 125, 50];
+    const secondary = [31, 41, 55];
+    const subtle = [241, 245, 249];
+
+    this.addHeader(doc, pageWidth);
+
+    // Title
+    doc.setFontSize(24);
+    doc.setTextColor(...primary);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ACCOUNT PROFILE', pageWidth / 2, 85, { align: 'center' });
+
+    // Divider
+    doc.setDrawColor(...primary);
+    doc.setLineWidth(1);
+    doc.line(20, 95, pageWidth - 20, 95);
+
+    // Build info
+    const fullName = `${user?.firstName || user?.first_name || ''} ${user?.lastName || user?.last_name || ''}`.trim() || 'N/A';
+    const memberSince = user?.createdAt || user?.joinedDate || user?.date_joined || null;
+    const fields = [
+      ['Full Name', fullName],
+      ['Email', user?.email || 'N/A'],
+      ['Phone', user?.phone || user?.phone_number || 'N/A'],
+      ['Role', user?.role || user?.userType || 'User'],
+      ['Member Since', this.formatDate(memberSince)],
+      ['Newsletter', (user?.newsletter ? 'Subscribed' : 'Not subscribed')]
+    ];
+
+    // Alternating info blocks
+    let y = 110;
+    fields.forEach(([label, value], idx) => {
+      if (idx % 2 === 0) {
+        doc.setFillColor(...subtle);
+        doc.roundedRect(20, y - 10, pageWidth - 40, 20, 2, 2, 'F');
+      }
+      doc.setFontSize(11);
+      doc.setTextColor(...primary);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${label}:`, 25, y);
+      doc.setTextColor(...secondary);
+      doc.setFont('helvetica', 'normal');
+      const wrapped = doc.splitTextToSize(String(value), pageWidth - 60);
+      doc.text(wrapped, 80, y);
+      y += Math.max(14, (wrapped.length * 6));
+    });
+
+    // Footer
+    this.addFooter(doc, pageWidth, pageHeight);
+    return doc;
+  }
+
+  downloadUserProfilePDF(user) {
+    const doc = this.generateUserProfilePDF(user);
+    const name = `${user?.firstName || user?.first_name || 'user'}_${user?.lastName || user?.last_name || ''}`.trim().replace(/\s+/g, '_');
+    const filename = `profile_${name || 'account'}_${new Date().toISOString().split('T')[0]}.pdf`;
+    this.downloadPDF(doc, filename);
+  }
+
   // Generate a single inquiry PDF
   generateInquiryPDF(contact) {
     const doc = new jsPDF();

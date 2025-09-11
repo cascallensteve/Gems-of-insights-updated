@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import './CoursesPage.css';
 import apiService from '../services/api';
-import CourseEnrollmentTest from './CourseEnrollmentTest';
-import { FiLock, FiUnlock } from 'react-icons/fi';
+// Removed CourseEnrollmentTest and video lock icons as the sections were deleted
 
 const CoursesPage = () => {
   const [formData, setFormData] = useState({
@@ -55,6 +54,8 @@ const CoursesPage = () => {
     }
   ];
 
+  const location = useLocation();
+
   // Auto-rotate images every 5 seconds
   useEffect(() => {
     // Ensure first image is visible initially
@@ -68,6 +69,19 @@ const CoursesPage = () => {
 
     return () => clearInterval(interval);
   }, [rotatingImages.length]);
+
+  // Open enrollment form when coming from CTA
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('enroll') === '1') {
+      setShowForm(true);
+      // Scroll to form
+      setTimeout(() => {
+        const el = document.querySelector('.registration-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
+    }
+  }, [location.search]);
 
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
@@ -229,30 +243,30 @@ const CoursesPage = () => {
 
   return (
     <motion.div 
-      className="courses-page"
+      className=""
       initial="visible"
       animate="visible"
       variants={containerVariants}
     >
       {/* Hero Section with Side-by-Side Layout */}
-      <motion.section className="courses-hero" variants={itemVariants}>
-        <div className="hero-content-wrapper">
+      <motion.section className="mt-[40px] md:mt-[52px]" variants={itemVariants}>
+        <div className="max-w-7xl mx-auto px-4 grid gap-6 md:grid-cols-2 items-center">
           {/* Left Side - Content */}
-          <div className="hero-content-left">
-            <h1>Gospel Medical Missionary Evangelism Training</h1>
-            <p>Equipping you with the knowledge and skills to serve others through natural health ministry</p>
-            <div className="contact-info-hero">
-              <p>📞 0794491920 | ✉️ info@gemsofinsight.com | 🌐 www.gemsofinsight.com</p>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Gospel Medical Missionary Evangelism Training</h1>
+            <p className="mt-2 text-gray-700">Equipping you with the knowledge and skills to serve others through natural health ministry</p>
+            <div className="mt-2 text-sm text-gray-600">
+              <p>✉️ info@gemsofinsight.com | 🌐 www.gemsofinsight.com</p>
             </div>
           </div>
 
           {/* Right Side - Rotating Images */}
-          <div className="hero-content-right">
-            <div className="image-slider">
+          <div>
+            <div className="relative overflow-hidden rounded-xl shadow h-56 sm:h-64">
               {rotatingImages.map((image, index) => (
                 <div
                   key={index}
-                  className={`slider-image ${index === currentImageIndex ? 'active' : ''}`}
+                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
                 >
                   <img 
                     src={image.src} 
@@ -261,25 +275,18 @@ const CoursesPage = () => {
                     onError={(e) => {
                       e.target.src = image.fallback;
                     }}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
+                    className="h-full w-full object-cover"
                   />
-                  <div className="image-overlay">
-                    <h3>{image.title}</h3>
-                  </div>
+                  <div className="absolute inset-x-0 bottom-0 bg-black/40 text-white text-sm p-2 text-center">{image.title}</div>
                 </div>
               ))}
               
               {/* Image Navigation Dots */}
-              <div className="image-dots">
+              <div className="absolute inset-x-0 bottom-2 flex items-center justify-center gap-2">
                 {rotatingImages.map((_, index) => (
                   <button
                     key={index}
-                    className={`dot ${index === currentImageIndex ? 'active' : ''}`}
+                    className={`h-2 w-2 rounded-full ${index === currentImageIndex ? 'bg-white' : 'bg-white/50'}`}
                     onClick={() => setCurrentImageIndex(index)}
                   />
                 ))}
@@ -289,23 +296,23 @@ const CoursesPage = () => {
         </div>
       </motion.section>
 
-      {/* Rest of the content remains the same */}
-      <div className="courses-container">
+      {/* Rest of the content */}
+      <div className="max-w-7xl mx-auto px-4">
         {/* Mission Quote */}
-        <motion.section className="mission-quote-section" variants={itemVariants}>
-          <div className="quote-wrapper">
+        <motion.section className="py-8 sm:py-10" variants={itemVariants}>
+          <div className="grid gap-6 md:grid-cols-2 items-center">
             {/* Left side - Quote text */}
-            <div className="quote-text-content">
-              <div className="quote-header">
-                <div className="quote-icon">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="text-emerald-700">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" fill="currentColor"/>
                     <path d="M15.583 17.321c-1.03-1.094-1.583-2.321-1.583-4.31 0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" fill="currentColor"/>
                   </svg>
                 </div>
-                <h2>Our Mission Foundation</h2>
+                <h2 className="text-xl font-bold text-gray-900">Our Mission Foundation</h2>
               </div>
-              <blockquote>
+              <blockquote className="mt-2 text-gray-700">
                 "Medical missionary work brings to humanity the gospel of release from suffering. 
                 It is the pioneer work of the gospel. It is the gospel practiced, the compassion of Christ revealed. 
                 Of this work there is great need, and the world is open for it. God grant that the importance of 
@@ -313,13 +320,13 @@ const CoursesPage = () => {
                 Then will the work of the ministry be after the Lord's order; the sick will be healed, 
                 and poor, suffering humanity will be blessed."
               </blockquote>
-              <cite>- MM 239.3</cite>
-              <div className="quote-decorative-line"></div>
+              <cite className="mt-1 block text-sm text-gray-500">- MM 239.3</cite>
+              <div className="mt-2 h-0.5 w-24 rounded bg-emerald-600"></div>
             </div>
 
             {/* Right side - Image */}
-            <div className="quote-image-content">
-              <div className="quote-image-wrapper">
+            <div>
+              <div className="relative overflow-hidden rounded-xl shadow">
                 <img 
                   src="https://res.cloudinary.com/dqvsjtkqw/image/upload/w_600,h_400,c_fill/v1755512011/acourses_rqbgul.webp" 
                   alt="Medical missionary work - healing through natural remedies"
@@ -327,14 +334,13 @@ const CoursesPage = () => {
                   onError={(e) => {
                     e.target.src = "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=600&h=400&fit=crop";
                   }}
+                  className="h-64 w-full object-cover"
                 />
-                <div className="image-overlay-accent">
-                  <div className="accent-circle"></div>
-                  <div className="accent-circle"></div>
-                </div>
+                <div className="absolute -left-4 -bottom-4 h-12 w-12 rounded-full bg-emerald-200/70"></div>
+                <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-emerald-200/70"></div>
               </div>
-              <div className="supporting-images">
-                <div className="small-image">
+              <div className="mt-3 flex items-center gap-2">
+                <div className="h-12 w-12 overflow-hidden rounded-md">
                   <img 
                     src="https://res.cloudinary.com/dqvsjtkqw/image/upload/w_100,h_100,c_fill/v1750921889/logs_co58wn.jpg" 
                     alt="Natural healing materials and herbs"
@@ -342,9 +348,10 @@ const CoursesPage = () => {
                     onError={(e) => {
                       e.target.src = "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=100&h=100&fit=crop";
                     }}
+                    className="h-12 w-12 object-cover"
                   />
                 </div>
-                <div className="small-image">
+                <div className="h-12 w-12 overflow-hidden rounded-md">
                   <img 
                     src="https://res.cloudinary.com/dqvsjtkqw/image/upload/w_100,h_100,c_fill/v1753882302/beautiful-african-female-florist-smiling-cutting-stems-working-flower-shop-white-wall_2_l3ozdi.webp" 
                     alt="Medical missionary training practitioner"
@@ -352,6 +359,7 @@ const CoursesPage = () => {
                     onError={(e) => {
                       e.target.src = "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=100&h=100&fit=crop";
                     }}
+                    className="h-12 w-12 object-cover"
                   />
                 </div>
               </div>
@@ -360,51 +368,53 @@ const CoursesPage = () => {
         </motion.section>
 
         {/* Training Modules */}
-        <motion.section className="training-modules" variants={itemVariants}>
-          <h2>Levels of Training</h2>
-          <div className="modules-grid">
-            <motion.div className="module-card" variants={itemVariants}>
-              <div className="module-header">
-                <span className="module-letter">A</span>
-                <h3>Module One</h3>
+        <motion.section className="py-10" variants={itemVariants}>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Levels of Training</h2>
+            <div className="h-0.5 w-24 rounded bg-emerald-600"></div>
+          </div>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <motion.div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm hover:shadow transition" variants={itemVariants}>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 font-semibold">A</span>
+                <h3 className="text-lg font-semibold text-gray-900">Module One</h3>
               </div>
-              <h4>Essentials of Applied Clinical Nutrition</h4>
-              <div className="module-details">
-                <span className="duration">1 Month</span>
-                <span className="price">KES 10,000</span>
+              <h4 className="mt-2 text-emerald-700 font-medium">Essentials of Applied Clinical Nutrition</h4>
+              <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+                <span className="inline-flex items-center gap-1">⏱️ 1 Month</span>
+                <span className="font-semibold text-emerald-700">KES 10,000</span>
               </div>
-              <p>Master the fundamentals of clinical nutrition and therapeutic dietary approaches for optimal health.</p>
+              <p className="mt-3 text-gray-700">Master the fundamentals of clinical nutrition and therapeutic dietary approaches for optimal health.</p>
             </motion.div>
 
-            <motion.div className="module-card" variants={itemVariants}>
-              <div className="module-header">
-                <span className="module-letter">B</span>
-                <h3>Module Two</h3>
+            <motion.div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm hover:shadow transition" variants={itemVariants}>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 font-semibold">B</span>
+                <h3 className="text-lg font-semibold text-gray-900">Module Two</h3>
               </div>
-              <h4>Fundamentals of Human Anatomy, Physiology & Clinical Pathology</h4>
-              <div className="module-details">
-                <span className="duration">4 Months</span>
-                <span className="price">KES 30,000</span>
+              <h4 className="mt-2 text-emerald-700 font-medium">Fundamentals of Human Anatomy, Physiology & Clinical Pathology</h4>
+              <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+                <span className="inline-flex items-center gap-1">⏱️ 4 Months</span>
+                <span className="font-semibold text-emerald-700">KES 30,000</span>
               </div>
-              <p>Comprehensive understanding of human body systems, functions, and disease processes.</p>
+              <p className="mt-3 text-gray-700">Comprehensive understanding of human body systems, functions, and disease processes.</p>
             </motion.div>
 
-            <motion.div className="module-card" variants={itemVariants}>
-              <div className="module-header">
-                <span className="module-letter">C</span>
-                <h3>Module Three</h3>
+            <motion.div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm hover:shadow transition" variants={itemVariants}>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 font-semibold">C</span>
+                <h3 className="text-lg font-semibold text-gray-900">Module Three</h3>
               </div>
-              <h4>Herbology and Botanical Medicine</h4>
-              <div className="module-details">
-                <span className="duration">2 Months</span>
-                <span className="price">KES 20,000</span>
+              <h4 className="mt-2 text-emerald-700 font-medium">Herbology and Botanical Medicine</h4>
+              <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+                <span className="inline-flex items-center gap-1">⏱️ 2 Months</span>
+                <span className="font-semibold text-emerald-700">KES 20,000</span>
               </div>
-              <p>Study of medicinal plants and their applications in traditional and modern healing practices.</p>
+              <p className="mt-3 text-gray-700">Study of medicinal plants and their applications in traditional and modern healing practices.</p>
             </motion.div>
           </div>
-          
-          <div className="total-cost">
-            <h3>Total Cost: KES 60,000</h3>
+          <div className="mt-6 rounded-lg bg-emerald-50/60 p-4 text-emerald-900">
+            <h3 className="font-semibold">Total Cost: KES 60,000</h3>
           </div>
         </motion.section>
 
@@ -429,11 +439,11 @@ const CoursesPage = () => {
               {enrollNotice.message}
             </motion.div>
           )}
-          <h2>Registration Form</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Registration Form</h2>
           
-          <div className="registration-cta">
+          <div className="registration-cta mb-3">
             <button 
-              className="toggle-form-btn"
+              className="toggle-form-btn inline-flex items-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
               onClick={() => setShowForm(!showForm)}
             >
               {showForm ? 'Hide Registration Form' : 'Show Registration Form'}
@@ -442,16 +452,16 @@ const CoursesPage = () => {
 
           {showForm && (
             <motion.div 
-              className="registration-form-container"
+              className="registration-form-container rounded-xl border border-emerald-100 bg-white p-4 shadow-sm"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               transition={{ duration: 0.3 }}
             >
               <form onSubmit={handleSubmit} className="registration-form">
                 <div className="form-section">
-                  <h3>Personal Details</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Personal Details</h3>
                   
-                  <div className="form-row">
+                  <div className="form-row grid gap-3 md:grid-cols-2">
                     <div className="form-group">
                       <label>First Name *</label>
                       <input
@@ -475,7 +485,7 @@ const CoursesPage = () => {
                     </div>
                   </div>
 
-                  <div className="form-row">
+                  <div className="form-row grid gap-3 md:grid-cols-2">
                     <div className="form-group">
                       <label>Gender *</label>
                       <div className="gender-options">
@@ -520,7 +530,7 @@ const CoursesPage = () => {
                     </div>
                   </div>
 
-                  <div className="form-row">
+                  <div className="form-row grid gap-3 md:grid-cols-2">
                     <div className="form-group">
                       <label>Email Address *</label>
                       <input
@@ -547,7 +557,7 @@ const CoursesPage = () => {
                     </div>
                   </div>
 
-                  <div className="form-row">
+                  <div className="form-row grid gap-3 md:grid-cols-2">
                     <div className="form-group">
                       <label>Other Number</label>
                       <input
@@ -572,7 +582,7 @@ const CoursesPage = () => {
                     </div>
                   </div>
 
-                  <div className="form-row">
+                  <div className="form-row grid gap-3 md:grid-cols-2">
                     <div className="form-group">
                       <label>City *</label>
                       <input
@@ -622,9 +632,9 @@ const CoursesPage = () => {
                   </div>
                 </div>
 
-                <div className="form-section">
-                  <h3>Select Module of Interest *</h3>
-                  <div className="module-selection">
+                <div className="form-section mt-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Select Module of Interest *</h3>
+                  <div className="module-selection space-y-2">
                     <label className="checkbox-label">
                       <input
                         type="checkbox"
@@ -664,104 +674,21 @@ const CoursesPage = () => {
                   {errors.selectedModules && <span className="error-text">{errors.selectedModules}</span>}
                 </div>
 
-                <button type="submit" className="submit-btn">
-                  Submit Registration
-                </button>
+                <div className="mt-4">
+                  <button type="submit" className="submit-btn inline-flex items-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600">
+                    Submit Registration
+                  </button>
+                </div>
               </form>
             </motion.div>
           )}
         </motion.section>
 
-        {/* Premium Video Library Section */}
-        <motion.section className="premium-videos-section" variants={itemVariants}>
-          <h2>Premium Video Library</h2>
-          <p className="section-subtitle">Unlock exclusive health topic videos with our premium content</p>
-          
-          <div className="videos-grid">
-            <div className="video-card locked">
-              <div className="video-thumbnail">
-                <img src="https://res.cloudinary.com/dqvsjtkqw/image/upload/w_400,h_250,c_fill/v1755512011/acourses_rqbgul.webp" alt="Natural Detox Methods" loading="lazy" />
-                <div className="video-overlay">
-                  <div className="lock-icon"><FiLock /></div>
-                  <div className="play-button">▶</div>
-                </div>
-                <div className="video-duration">15:30</div>
-              </div>
-              <div className="video-info">
-                <h3>Natural Detox Methods</h3>
-                <p>Learn effective natural detoxification techniques using herbs and lifestyle changes.</p>
-                <div className="video-meta">
-                  <span className="difficulty">Beginner</span>
-                  <span className="price">KES 500</span>
-                </div>
-                <button className="unlock-btn">
-                  <span className="lock-icon"><FiUnlock /></span>
-                  Unlock Video
-                </button>
-              </div>
-            </div>
+        {/* Premium Video Library removed as requested */}
 
-            <div className="video-card locked">
-              <div className="video-thumbnail">
-                <img src="https://res.cloudinary.com/dqvsjtkqw/image/upload/w_400,h_250,c_fill/v1753882302/beautiful-african-female-florist-smiling-cutting-stems-working-flower-shop-white-wall_2_l3ozdi.webp" alt="Herbal Medicine Preparation" loading="lazy" />
-                <div className="video-overlay">
-                  <div className="lock-icon"><FiLock /></div>
-                  <div className="play-button">▶</div>
-                </div>
-                <div className="video-duration">22:45</div>
-              </div>
-              <div className="video-info">
-                <h3>Herbal Medicine Preparation</h3>
-                <p>Step-by-step guide to preparing effective herbal medicines at home.</p>
-                <div className="video-meta">
-                  <span className="difficulty">Intermediate</span>
-                  <span className="price">KES 750</span>
-                </div>
-                <button className="unlock-btn">
-                  <span className="lock-icon"><FiUnlock /></span>
-                  Unlock Video
-                </button>
-              </div>
-            </div>
-          </div>
+        {/* Notes removed as requested */}
 
-          <div className="premium-cta">
-            <h3>Get All Access Pass</h3>
-            <p>Unlock all premium videos and save 40% with our complete library access</p>
-            <div className="cta-pricing">
-              <span className="original-price">KES 4,500</span>
-              <span className="discount-price">KES 2,700</span>
-            </div>
-            <button className="all-access-btn">
-              <span className="crown-icon">👑</span>
-              Get All Access Pass
-            </button>
-          </div>
-        </motion.section>
-
-        {/* Notes Section */}
-        <motion.section className="notes-section" variants={itemVariants}>
-          <h2>Important Notes</h2>
-          <div className="notes-content">
-            <div className="note-item">
-              <span className="note-icon">📧</span>
-              <p>Once this form is fully completed, email it to <strong>applications@gemsofinsight.com</strong></p>
-            </div>
-            <div className="note-item">
-              <span className="note-icon">🎓</span>
-              <p>A certificate will be issued upon receipt and evaluation of all completed assignments.</p>
-            </div>
-            <div className="note-item">
-              <span className="note-icon">📞</span>
-              <p>For more information, contact us at <strong>0794491920</strong> or <strong>info@gemsofinsight.com</strong></p>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Test Section - Remove this after testing */}
-        <motion.section className="test-section" variants={itemVariants}>
-          <CourseEnrollmentTest />
-        </motion.section>
+        {/* Test section removed as requested */}
       </div>
     </motion.div>
   );

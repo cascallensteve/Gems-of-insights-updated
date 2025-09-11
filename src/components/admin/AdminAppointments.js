@@ -3,7 +3,7 @@ import { FaCalendar, FaClock, FaUser, FaPhone, FaEnvelope, FaStickyNote, FaCheck
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import pdfService from '../../services/pdfService';
-import './AdminAppointments.css';
+// Tailwind conversion: removed './AdminAppointments.css'
 
 const AdminAppointments = () => {
   const { currentUser } = useAuth();
@@ -260,7 +260,7 @@ const AdminAppointments = () => {
   // Download individual appointment as PDF
   const downloadAppointmentPDF = (appointment) => {
     try {
-      pdfService.downloadAppointmentPDF(appointment);
+      pdfService.printAppointment(appointment);
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
@@ -280,9 +280,9 @@ const AdminAppointments = () => {
     
     try {
       const title = filter === 'all' ? 'All Appointments' : `${filter.charAt(0).toUpperCase() + filter.slice(1)} Appointments`;
-      console.log('📄 Generating PDF with title:', title);
-      pdfService.downloadAppointmentsListPDF(filteredAppointments, title);
-      console.log('✅ PDF generation completed');
+      console.log('📄 Generating print with title:', title);
+      pdfService.printAppointmentsList(filteredAppointments, title);
+      console.log('✅ Print generation completed');
     } catch (error) {
       console.error('❌ Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
@@ -301,9 +301,9 @@ const AdminAppointments = () => {
     }
     
     try {
-      console.log('📄 Generating filtered PDF...');
-      pdfService.downloadFilteredAppointmentsPDF(filteredAppointments, filter);
-      console.log('✅ Filtered PDF generation completed');
+      console.log('📄 Generating filtered print...');
+      pdfService.printAppointmentsList(filteredAppointments, `${filter.charAt(0).toUpperCase() + filter.slice(1)} Appointments`);
+      console.log('✅ Filtered print generation completed');
     } catch (error) {
       console.error('❌ Error generating filtered PDF:', error);
       alert('Error generating PDF. Please try again.');
@@ -329,9 +329,9 @@ const AdminAppointments = () => {
     }
     
     try {
-      console.log('📄 Generating today\'s PDF...');
-      pdfService.downloadTodayAppointmentsPDF(todayAppointments);
-      console.log('✅ Today\'s PDF generation completed');
+      console.log('📄 Generating today\'s print...');
+      pdfService.printAppointmentsList(todayAppointments, "Today's Appointments");
+      console.log('✅ Today\'s print generation completed');
     } catch (error) {
       console.error('❌ Error generating today\'s PDF:', error);
       alert('Error generating PDF. Please try again.');
@@ -368,24 +368,19 @@ const AdminAppointments = () => {
 
   if (loading) {
     return (
-      <div className="admin-appointments loading">
-        <div className="loading-spinner">
-          <div className="dots-loader">...</div>
-        </div>
+      <div className="p-4">
+        <div className="grid place-items-center rounded-xl border border-emerald-100 bg-white p-6 text-sm text-gray-700 shadow-sm">Loading...</div>
       </div>
     );
   }
 
   if (error && appointments.length === 0) {
     return (
-      <div className="admin-appointments error">
-        <div className="error-message">
-          <h3>❌ Error Loading Appointments</h3>
+      <div className="p-4">
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+          <div className="font-semibold">❌ Error Loading Appointments</div>
           <p>{error}</p>
-          <button 
-            className="btn btn-primary"
-            onClick={() => window.location.reload()}
-          >
+          <button className="mt-2 inline-flex items-center rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-600" onClick={() => window.location.reload()}>
             Retry
           </button>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import './AboutPage.css';
+ 
 
 const AboutPage = () => {
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
@@ -99,32 +99,31 @@ const AboutPage = () => {
   };
 
   return (
-    <div className="about-page-organic">
+    <div className="">
       {/* Hero Section */}
       <motion.section 
         ref={heroRef}
-        className="about-hero-section"
+        className="relative mt-[64px] md:mt-[72px]"
         initial="hidden"
         animate={heroInView ? "visible" : "hidden"}
         variants={fadeInUp}
       >
-        <div className="hero-background">
-          <div className="hero-overlay"></div>
+        <div className="relative overflow-hidden rounded-xl">
           <img 
             src="https://res.cloudinary.com/djksfayfu/image/upload/v1753347468/colorful-fruits-tasty-fresh-ripe-juicy-white-desk_jalaan.jpg" 
             alt="Organic Health"
+            className="h-64 w-full object-cover md:h-80"
           />
-        </div>
-        <div className="container">
-          <div className="hero-content">
-            <motion.h1 variants={fadeInUp}>We Are The Leader In Organic Health</motion.h1>
-            <motion.p variants={fadeInUp}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+            <motion.h1 className="text-white text-2xl md:text-3xl font-bold" variants={fadeInUp}>We Are The Leader In Organic Health</motion.h1>
+            <motion.p className="mt-2 max-w-3xl text-white/90" variants={fadeInUp}>
               Empowering communities through natural health education, quality organic products, 
               and holistic wellness solutions that transform lives and restore vitality.
             </motion.p>
-            <motion.div className="hero-buttons" variants={fadeInUp}>
-              <button className="btn-primary">Discover Our Story</button>
-              <button className="btn-secondary">View Products</button>
+            <motion.div className="mt-4 flex items-center gap-3" variants={fadeInUp}>
+              <button className="inline-flex items-center rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shadow hover:bg-emerald-500">Discover Our Story</button>
+              <button className="inline-flex items-center rounded-full border border-white/70 text-white px-5 py-2 text-sm font-semibold hover:bg-white/10">View Products</button>
             </motion.div>
           </div>
         </div>
@@ -133,32 +132,33 @@ const AboutPage = () => {
       {/* About Lupinus Group Section */}
       <motion.section 
         ref={aboutRef}
-        className="about-content-section"
+        className="py-12 bg-white"
         initial="hidden"
         animate={aboutInView ? "visible" : "hidden"}
         variants={staggerContainer}
       >
-        <div className="container">
-          <div className="about-grid">
-            <motion.div className="about-text" variants={fadeInUp}>
-              <h2>About Gems of Insight</h2>
-              <p>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid gap-6 md:grid-cols-2 items-center">
+            <motion.div className="" variants={fadeInUp}>
+              <h2 className="text-xl font-bold text-gray-900">About Gems of Insight</h2>
+              <p className="mt-2 text-gray-700">
                 At Gems of Insight, we believe in the transformative power of natural health and wellness. 
                 Our journey began with a simple mission: to provide communities with access to quality 
                 organic products, comprehensive health education, and the wisdom needed to make informed 
                 decisions about their wellbeing.
               </p>
-              <p>
+              <p className="mt-2 text-gray-700">
                 We combine traditional healing wisdom with modern understanding, offering a holistic 
                 approach to health that addresses not just symptoms, but the root causes of wellness 
                 challenges. Our team of dedicated professionals is committed to serving with excellence, 
                 integrity, and genuine care for every individual we encounter.
               </p>
             </motion.div>
-            <motion.div className="about-image" variants={fadeInUp}>
+            <motion.div className="" variants={fadeInUp}>
               <img 
                 src="https://res.cloudinary.com/djksfayfu/image/upload/v1748982986/basket-full-vegetables_mp02db.jpg"
                 alt="Natural Health Products"
+                className="rounded-lg shadow"
               />
             </motion.div>
           </div>
@@ -168,28 +168,28 @@ const AboutPage = () => {
       {/* Stats Counter Section */}
       <motion.section 
         ref={statsRef}
-        className="stats-section"
+        className="py-10 bg-gray-50"
         initial="hidden"
         animate={statsInView ? "visible" : "hidden"}
         variants={staggerContainer}
       >
-        <div className="container">
-          <div className="stats-grid">
-            <motion.div className="stat-item" variants={fadeInUp}>
-              <h3>500+</h3>
-              <p>Happy Customers</p>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <motion.div className="rounded-md border border-gray-200 bg-white p-4 shadow" variants={fadeInUp}>
+              <h3 className="text-xl font-bold text-gray-900">500+</h3>
+              <p className="text-sm text-gray-600">Happy Customers</p>
             </motion.div>
-            <motion.div className="stat-item" variants={fadeInUp}>
-              <h3>50+</h3>
-              <p>Natural Products</p>
+            <motion.div className="rounded-md border border-gray-200 bg-white p-4 shadow" variants={fadeInUp}>
+              <h3 className="text-xl font-bold text-gray-900">50+</h3>
+              <p className="text-sm text-gray-600">Natural Products</p>
             </motion.div>
-            <motion.div className="stat-item" variants={fadeInUp}>
-              <h3>15+</h3>
-              <p>Years Experience</p>
+            <motion.div className="rounded-md border border-gray-200 bg-white p-4 shadow" variants={fadeInUp}>
+              <h3 className="text-xl font-bold text-gray-900">15+</h3>
+              <p className="text-sm text-gray-600">Years Experience</p>
             </motion.div>
-            <motion.div className="stat-item" variants={fadeInUp}>
-              <h3>100+</h3>
-              <p>Health Consultations</p>
+            <motion.div className="rounded-md border border-gray-200 bg-white p-4 shadow" variants={fadeInUp}>
+              <h3 className="text-xl font-bold text-gray-900">100+</h3>
+              <p className="text-sm text-gray-600">Health Consultations</p>
             </motion.div>
           </div>
         </div>
@@ -433,20 +433,7 @@ const AboutPage = () => {
               </motion.div>
             )}
 
-            <div className="payment-info">
-              <h3>Payment Methods</h3>
-              <div className="payment-grid">
-                <div className="payment-option">
-                  <h4>Lipa Na M-Pesa Paybill</h4>
-                  <p><strong>Business No:</strong> 247247</p>
-                  <p><strong>Account No:</strong> 00 901 858 076 15</p>
-                </div>
-                <div className="payment-option">
-                  <h4>M-Pesa Send Money</h4>
-                  <p><strong>Phone No:</strong> 0794491920</p>
-                </div>
-              </div>
-            </div>
+            
           </motion.div>
         </div>
       </motion.section>

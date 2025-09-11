@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './AuthPage.css';
 
 const AuthPage = ({ onLogin, onClose }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -127,161 +126,144 @@ const AuthPage = ({ onLogin, onClose }) => {
   };
 
   return (
-    <div className="auth-overlay" onClick={onClose}>
-      <div className="auth-container" onClick={(e) => e.stopPropagation()}>
-        <button className="close-auth" onClick={onClose}>×</button>
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative w-full max-w-5xl bg-white rounded-xl shadow-xl overflow-hidden grid md:grid-cols-2" onClick={(e) => e.stopPropagation()}>
+        <button className="absolute right-3 top-2 text-2xl text-gray-600 hover:text-emerald-700" onClick={onClose}>×</button>
         
-        {/* Logo Section */}
-        <div className="auth-logo">
+        {/* Logo/Visual Section */}
+        <div className="hidden md:flex items-center justify-center bg-emerald-50">
           <img 
             src="https://res.cloudinary.com/djksfayfu/image/upload/v1753345398/Gems_Logo_h9auzj.png" 
             alt="Gems of Insight" 
-            className="logo-image"
+            className="h-20 w-auto object-contain"
           />
         </div>
 
         {/* Login/Signup Form Section */}
-        <div className="auth-content">
-          {!isLogin && (
-            <div className="auth-image-section">
-              <img 
-                src="https://res.cloudinary.com/djksfayfu/image/upload/v1753347468/colorful-fruits-tasty-fresh-ripe-juicy-white-desk_jalaan.jpg" 
-                alt="Healthy Living" 
-                className="healthy-image"
-              />
-              <div className="image-overlay">
-                <h3>Start Your Wellness Journey</h3>
-                <p>Join thousands who trust us for their natural health needs</p>
-              </div>
-            </div>
-          )}
+        <div className="p-6 md:p-8">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+            <p className="text-sm text-gray-600 mt-1">{isLogin ? 'Sign in to continue your wellness journey' : 'Join our natural wellness community'}</p>
+          </div>
 
-          <div className="auth-form-section">
-            <div className="auth-header">
-              <h2>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
-              <p>{isLogin ? 'Sign in to continue your wellness journey' : 'Join our natural wellness community'}</p>
-            </div>
+          {/* Google Authentication removed */}
 
-            {/* Google Authentication removed */}
-
-            <form className="auth-form" onSubmit={handleSubmit}>
-              {!isLogin && (
-                <div className="form-row">
-                  <div className="form-group">
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className={errors.firstName ? 'error' : ''}
-                      placeholder="First Name"
-                      required
-                    />
-                    {errors.firstName && <span className="error-text">{errors.firstName}</span>}
-                  </div>
-                  <div className="form-group">
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className={errors.lastName ? 'error' : ''}
-                      placeholder="Last Name"
-                      required
-                    />
-                    {errors.lastName && <span className="error-text">{errors.lastName}</span>}
-                  </div>
-                </div>
-              )}
-
-              {!isLogin && (
-                <div className="form-group">
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {!isLogin && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex flex-col">
                   <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
                     onChange={handleInputChange}
-                    className={errors.phone ? 'error' : ''}
-                    placeholder="Phone Number (+254...)"
+                    className={`mt-1 rounded-md border ${errors.firstName ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
+                    placeholder="First name"
                     required
                   />
-                  {errors.phone && <span className="error-text">{errors.phone}</span>}
+                  {errors.firstName && <span className="text-sm text-red-600 mt-1">{errors.firstName}</span>}
                 </div>
-              )}
+                <div className="flex flex-col">
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    className={`mt-1 rounded-md border ${errors.lastName ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
+                    placeholder="Last name"
+                    required
+                  />
+                  {errors.lastName && <span className="text-sm text-red-600 mt-1">{errors.lastName}</span>}
+                </div>
+              </div>
+            )}
 
-              <div className="form-group">
+            {!isLogin && (
+              <div className="flex flex-col">
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleInputChange}
-                  className={errors.email ? 'error' : ''}
-                  placeholder="Email or Username"
+                  className={`mt-1 rounded-md border ${errors.phone ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
+                  placeholder="Phone Number (+254...)"
                   required
                 />
-                {errors.email && <span className="error-text">{errors.email}</span>}
+                {errors.phone && <span className="text-sm text-red-600 mt-1">{errors.phone}</span>}
               </div>
+            )}
 
-              <div className="form-group">
+            <div className="flex flex-col">
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`mt-1 rounded-md border ${errors.email ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
+                placeholder="Email or Username"
+                required
+              />
+              {errors.email && <span className="text-sm text-red-600 mt-1">{errors.email}</span>}
+            </div>
+
+            <div className="flex flex-col">
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`mt-1 rounded-md border ${errors.password ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
+                placeholder="Password"
+                required
+              />
+              {errors.password && <span className="text-sm text-red-600 mt-1">{errors.password}</span>}
+            </div>
+
+            {!isLogin && (
+              <div className="flex flex-col">
                 <input
                   type="password"
-                  name="password"
-                  value={formData.password}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className={errors.password ? 'error' : ''}
-                  placeholder="Password"
+                  className={`mt-1 rounded-md border ${errors.confirmPassword ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
+                  placeholder="Confirm Password"
                   required
                 />
-                {errors.password && <span className="error-text">{errors.password}</span>}
+                {errors.confirmPassword && <span className="text-sm text-red-600 mt-1">{errors.confirmPassword}</span>}
               </div>
+            )}
 
-              {!isLogin && (
-                <div className="form-group">
+            {!isLogin && (
+              <div className="flex items-start gap-2">
+                <label className="text-sm text-gray-700">
                   <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
+                    type="checkbox"
+                    name="terms"
+                    checked={formData.terms}
                     onChange={handleInputChange}
-                    className={errors.confirmPassword ? 'error' : ''}
-                    placeholder="Confirm Password"
-                    required
+                    className={`mr-2 h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 ${errors.terms ? 'ring-2 ring-red-200' : ''}`}
                   />
-                  {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
-                </div>
-              )}
+                  I agree to the Terms & Conditions
+                </label>
+                {errors.terms && <span className="text-sm text-red-600 mt-1">{errors.terms}</span>}
+              </div>
+            )}
 
-              {!isLogin && (
-                <div className="form-group checkbox-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="terms"
-                      checked={formData.terms}
-                      onChange={handleInputChange}
-                      className={errors.terms ? 'error' : ''}
-                    />
-                    <span className="checkmark"></span>
-                    I agree to the Terms & Conditions
-                  </label>
-                  {errors.terms && <span className="error-text">{errors.terms}</span>}
-                </div>
-              )}
+            {errors.submit && <div className="text-sm text-red-600">{errors.submit}</div>}
 
-              {errors.submit && <div className="error-text submit-error">{errors.submit}</div>}
+            <button type="submit" className="w-full inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-4 py-2.5 text-sm font-medium shadow hover:bg-emerald-600 transition disabled:opacity-80" disabled={loading}>
+              {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
+            </button>
+          </form>
 
-              <button type="submit" className="auth-submit-btn" disabled={loading}>
-                {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
+          <div className="text-center text-sm text-gray-700 mt-4">
+            <p>
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              <button type="button" className="text-emerald-700 hover:underline" onClick={toggleAuthMode}>
+                {isLogin ? 'Sign Up' : 'Sign In'}
               </button>
-            </form>
-
-            <div className="auth-footer">
-              <p>
-                {isLogin ? "Don't have an account? " : "Already have an account? "}
-                <button type="button" className="toggle-auth" onClick={toggleAuthMode}>
-                  {isLogin ? 'Sign Up' : 'Sign In'}
-                </button>
-              </p>
-            </div>
+            </p>
           </div>
         </div>
       </div>

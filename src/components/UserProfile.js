@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { resetPassword, getUserOrders } from '../services/api';
+import { getUserOrders } from '../services/api';
+import apiService from '../services/api';
+import { FaUser, FaBox, FaLock, FaCog, FaDownload } from 'react-icons/fa';
+import receiptService from '../services/receiptService';
+import pdfService from '../services/pdfService';
 import AdminBlogManager from './AdminBlogManager';
 import LoadingDots from './LoadingDots';
-import './UserProfile.css';
+// Tailwind conversion: removed external CSS import
 
 const UserProfile = () => {
   const { currentUser, updateUser, logout, refreshUserFromServer, getCurrentUserData, login } = useAuth();
@@ -34,11 +38,53 @@ const UserProfile = () => {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    if (activeTab !== 'orders') return;
+    const interval = setInterval(() => {
+      loadUserOrders();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
   const loadUserOrders = async () => {
     setLoadingOrders(true);
     try {
-      const userOrders = await getUserOrders();
-      setOrders(userOrders || []);
+      const apiData = await getUserOrders();
+      const rawOrders = Array.isArray(apiData) ? apiData : (apiData?.orders || apiData?.data || []);
+
+      const normalized = rawOrders.map((o, idx) => {
+        const items = (o.items || o.order_items || o.products || []).map((it, i) => ({
+          id: it.id ?? it.product_id ?? it.product ?? it.item ?? `${o.id}-item-${i}`,
+          productId: it.product ?? it.item ?? it.product_id ?? it.id,
+          name: it.name ?? it.product_name ?? it.title ?? `Item ${i+1}`,
+          price: Number(it.price ?? it.unit_price ?? it.amount ?? 0) || 0,
+          quantity: Number(it.quantity ?? it.qty ?? 1),
+          image: it.image ?? it.photo ?? '/images/default-product.jpg'
+        }));
+
+        const created = o.date || o.created_at || o.created || new Date().toISOString();
+        let status = (o.status || o.order_status || o.payment_status || 'processing').toString().toLowerCase();
+        const isPaid = (o.is_paid === true) || ['paid','completed','success','delivered'].includes(status);
+        if (!isPaid) {
+          if (['pending','awaiting','payment_pending','unpaid'].includes(status)) {
+            status = 'payment_pending';
+          }
+        }
+        const total = Number(
+          o.total ?? o.total_amount ?? o.amount ?? (items.reduce((s, it) => s + (Number(it.price)||0) * (Number(it.quantity)||1), 0))
+        );
+
+        return {
+          id: o.id?.toString?.() || o.order_id || o.reference || `ORD-${Date.now()}-${idx}`,
+          date: new Date(created).toISOString(),
+          status,
+          total,
+          items
+        };
+      });
+
+      normalized.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setOrders(normalized);
     } catch (error) {
       console.error('Error loading orders:', error);
       setOrders([]);
@@ -112,11 +158,7 @@ const UserProfile = () => {
     }
 
     try {
-      await resetPassword({
-        email: currentUser.email,
-        currentPassword: passwordResetData.currentPassword,
-        newPassword: passwordResetData.newPassword
-      });
+      await apiService.auth.changePassword(passwordResetData.currentPassword, passwordResetData.newPassword);
       
       setMessage({ type: 'success', text: 'Password updated successfully!' });
       setShowPasswordReset(false);
@@ -182,102 +224,80 @@ const UserProfile = () => {
   ];
 
   return (
-    <div className="user-profile">
-      <div className="profile-container">
+    <div className="mt-[64px] md:mt-[72px]">
+      <div className="mx-auto max-w-6xl px-4">
         {/* Welcome Message */}
-        <div className="welcome-message">
-          <div className="welcome-content">
-            <h2>Hi, {currentUser?.firstName || currentUser?.first_name || 'User'}! 🌟</h2>
-            <p>{getGreeting()}! Welcome back to your wellness dashboard. You've been a valued member for {getMembershipDuration()}. Manage your health journey, track your orders, and personalize your experience.</p>
-          </div>
+        <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900">Hi, {currentUser?.firstName || currentUser?.first_name || 'User'}! 🌟</h2>
+          <p className="mt-1 text-gray-700">{getGreeting()}! Welcome back to your wellness dashboard. You've been a valued member for {getMembershipDuration()}. Manage your health journey, track your orders, and personalize your experience.</p>
         </div>
 
         {/* Messages */}
         {message.text && (
-          <div className={`${message.type}-message`}>
-            <span>{message.type === 'success' ? '✅' : '❌'}</span>
+          <div className={`mt-3 rounded-md border px-3 py-2 text-sm ${message.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-red-200 bg-red-50 text-red-800'}`}>
+            <span className="mr-2">{message.type === 'success' ? '✅' : '❌'}</span>
             {message.text}
           </div>
         )}
         
         {/* Profile Header */}
-        <div className="profile-header">
-          <div className="profile-avatar">
-            <div className="avatar-circle">
+        <div className="mt-4 grid gap-4 rounded-xl border border-emerald-100 bg-white p-5 shadow-sm md:grid-cols-[auto_1fr] md:items-center">
+          <div className="flex items-center justify-center">
+            <div className="grid h-16 w-16 place-items-center rounded-full bg-emerald-600 text-lg font-semibold text-white">
               {(currentUser?.firstName || currentUser?.first_name || 'U').charAt(0).toUpperCase()}
             </div>
           </div>
-          <div className="profile-info">
-            <h1>{currentUser?.firstName || currentUser?.first_name || 'User'} {currentUser?.lastName || currentUser?.last_name || ''}</h1>
-            <p>{currentUser?.email}</p>
-            <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '5px' }}>
-              Member since {new Date(currentUser?.createdAt || Date.now()).toLocaleDateString()}
-            </p>
-            <div className="profile-stats">
-              <div className="stat">
-                <span className="stat-number">{orders.length || 0}</span>
-                <span className="stat-label">Orders</span>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">{currentUser?.firstName || currentUser?.first_name || 'User'} {currentUser?.lastName || currentUser?.last_name || ''}</h1>
+            <p className="text-sm text-gray-700">{currentUser?.email}</p>
+            <p className="text-xs text-gray-500 mt-1">Member since {new Date(currentUser?.createdAt || Date.now()).toLocaleDateString()}</p>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-md border border-emerald-100 bg-emerald-50/60 p-2">
+                <div className="text-base font-semibold text-gray-900">{orders.length || 0}</div>
+                <div className="text-xs text-gray-700">Orders</div>
               </div>
-              <div className="stat">
-                <span className="stat-number">{getMembershipDuration()}</span>
-                <span className="stat-label">Member</span>
+              <div className="rounded-md border border-emerald-100 bg-emerald-50/60 p-2">
+                <div className="text-base font-semibold text-gray-900">{getMembershipDuration()}</div>
+                <div className="text-xs text-gray-700">Member</div>
               </div>
-              <div className="stat">
-                <span className="stat-number">{currentUser?.role === 'admin' ? 'Admin' : 'Active'}</span>
-                <span className="stat-label">Status</span>
+              <div className="rounded-md border border-emerald-100 bg-emerald-50/60 p-2">
+                <div className="text-base font-semibold text-gray-900">{currentUser?.role === 'admin' ? 'Admin' : 'Active'}</div>
+                <div className="text-xs text-gray-700">Status</div>
               </div>
             </div>
           </div>
-          <div className="profile-actions">
-            {!isEditing ? (
-              <div className="profile-action-buttons">
-                <button className="edit-btn" onClick={() => setIsEditing(true)}>
-                  ✏️ Edit Profile
-                </button>
-              </div>
-            ) : (
-              <div className="edit-actions">
-                <button className="save-btn" onClick={handleSave}>
-                  ✅ Save
-                </button>
-                <button className="cancel-btn" onClick={handleCancel}>
-                  ❌ Cancel
-                </button>
-              </div>
-            )}
-
-          </div>
+          {/* Edit profile controls removed as requested */}
         </div>
 
         {/* Profile Tabs */}
-        <div className="profile-tabs">
+        <div className="mt-4 flex gap-2 overflow-x-auto rounded-xl border border-emerald-100 bg-white p-2">
           <button 
-            className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+            className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'profile' ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-emerald-50'}`}
             onClick={() => setActiveTab('profile')}
           >
-            👤 Personal Info
+            <FaUser /> Personal Info
           </button>
           <button 
-            className={`tab-button ${activeTab === 'orders' ? 'active' : ''}`}
+            className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'orders' ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-emerald-50'}`}
             onClick={() => setActiveTab('orders')}
           >
-            📦 My Orders
+            <FaBox /> My Orders
           </button>
           <button 
-            className={`tab-button ${activeTab === 'security' ? 'active' : ''}`}
+            className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'security' ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-emerald-50'}`}
             onClick={() => setActiveTab('security')}
           >
-            🔒 Security
+            <FaLock /> Security
           </button>
           <button 
-            className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
+            className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'settings' ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-emerald-50'}`}
             onClick={() => setActiveTab('settings')}
           >
-            ⚙️ Account Settings
+            <FaCog /> Account Settings
           </button>
           {(currentUser?.role === 'admin' || currentUser?.userType === 'admin') && (
             <button 
-              className={`tab-button ${activeTab === 'admin' ? 'active' : ''}`}
+              className={`rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'admin' ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-emerald-50'}`}
               onClick={() => setActiveTab('admin')}
             >
               📝 Blog Management
@@ -286,103 +306,80 @@ const UserProfile = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="tab-content">
+        <div className="mt-4 rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
           {activeTab === 'profile' && (
-            <div className="profile-details">
-              <h2>Personal Information</h2>
-              <div className="profile-form">
-                <div className="form-group">
-                  <label>First Name</label>
-                  <div className="form-value form-value-readonly">
-                    {currentUser?.firstName || currentUser?.first_name || 'Not provided'}
-                  </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Personal Information</h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs text-gray-500">First Name</div>
+                  <div className="text-sm font-medium text-gray-900">{currentUser?.firstName || currentUser?.first_name || 'Not provided'}</div>
                 </div>
-                <div className="form-group">
-                  <label>Last Name</label>
-                  <div className="form-value form-value-readonly">
-                    {currentUser?.lastName || currentUser?.last_name || 'Not provided'}
-                  </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs text-gray-500">Last Name</div>
+                  <div className="text-sm font-medium text-gray-900">{currentUser?.lastName || currentUser?.last_name || 'Not provided'}</div>
                 </div>
-                <div className="form-group">
-                  <label>Email</label>
-                  {isEditing ? (
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="Enter your email"
-                    />
-                  ) : (
-                    <div className="form-value">{currentUser?.email}</div>
-                  )}
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs text-gray-500">Email</div>
+                  <div className="text-sm font-medium text-gray-900 break-all">{currentUser?.email || 'Not provided'}</div>
                 </div>
-                <div className="form-group">
-                  <label>Phone</label>
-                  {isEditing ? (
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="Enter your phone number"
-                    />
-                  ) : (
-                    <div className="form-value">{currentUser?.phone || currentUser?.phone_number || 'Not provided'}</div>
-                  )}
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs text-gray-500">Phone</div>
+                  <div className="text-sm font-medium text-gray-900">{currentUser?.phone || currentUser?.phone_number || 'Not provided'}</div>
                 </div>
-                <div className="form-group">
-                  <label>Newsletter Subscription</label>
-                  <div className="checkbox-group">
-                    <input
-                      type="checkbox"
-                      id="newsletter"
-                      name="newsletter"
-                      checked={isEditing ? formData.newsletter : currentUser?.newsletter}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                    />
-                    <label htmlFor="newsletter">Subscribe to wellness tips and updates</label>
-                  </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 sm:col-span-2">
+                  <div className="text-xs text-gray-500">Newsletter Subscription</div>
+                  <div className="text-sm font-medium text-gray-900">{currentUser?.newsletter ? 'Subscribed' : 'Not subscribed'}</div>
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'orders' && (
-            <div className="orders-summary">
-              <div className="section-header">
-                <h2>My Orders</h2>
-                <button className="view-all-btn" onClick={() => window.location.href = '/orders'}>
+            <div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">My Orders</h2>
+                <button className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => window.location.href = '/orders'}>
                   View All Orders
                 </button>
               </div>
               {loadingOrders ? (
-                <LoadingDots text="Loading your orders..." size="large" />
+                <div className="py-10 flex items-center justify-center"><LoadingDots text="Loading your orders..." size="large" /></div>
               ) : orders.length > 0 ? (
-                <div className="orders-grid">
-                  {orders.slice(0, 4).map(order => (
-                    <div key={order.id} className="order-card">
-                      <div className="order-id">Order #{order.id}</div>
-                      <div className="order-details">
-                        <p><strong>Date:</strong> {new Date(order.date).toLocaleDateString()}</p>
-                        <p><strong>Total:</strong> KSH {order.total?.toLocaleString() || '0'}</p>
-                        <div className="order-status">
-                          <span className={`status-${order.status}`}>
-                            {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Unknown'}
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {orders.slice(0, 4).map(order => {
+                    const paid = ['paid','completed','success','delivered'].includes((order.status||'').toLowerCase());
+                    const statusColor = paid ? '#16a34a' : (order.status==='payment_pending' ? '#f59e0b' : '#64748b');
+                    return (
+                      <div key={order.id} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="text-sm font-semibold text-gray-900">Order #{order.id}</div>
+                            <div className="text-xs text-gray-500">{new Date(order.date).toLocaleDateString()}</div>
+                          </div>
+                          <span className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium text-white" style={{ backgroundColor: statusColor }}>
+                            {paid ? 'Paid' : (order.status?.charAt(0).toUpperCase() + order.status?.slice(1))}
                           </span>
                         </div>
+                        <div className="mt-3 text-sm text-gray-700"><strong className="text-gray-900">Total:</strong> KSH {Number(order.total||0).toLocaleString()}</div>
+                        <div className="mt-3">
+                          <button
+                            className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
+                            onClick={() => paid ? receiptService.downloadReceipt(order) : receiptService.downloadCartDetailsPDF(order)}
+                          >
+                            <FaDownload /> {paid ? 'Download Receipt' : 'Download Cart PDF'}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                <div className="text-center text-gray-600 py-10">
                   <p>No orders yet. Start shopping to see your orders here!</p>
                   <button 
-                    className="edit-btn" 
+                    className="mt-3 inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-white text-sm font-medium hover:bg-emerald-700" 
                     onClick={() => window.location.href = '/shop'}
-                    style={{ marginTop: '15px' }}
                   >
                     🛍️ Start Shopping
                   </button>
@@ -392,97 +389,97 @@ const UserProfile = () => {
           )}
 
           {activeTab === 'security' && (
-            <div className="security-section">
-              <h2>Security Settings</h2>
-              
-              <div className="settings-section">
-                <h3>🔒 Password Management</h3>
-                {!showPasswordReset ? (
-                  <div className="setting-item">
-                    <div className="setting-info">
-                      <h4>Change Password</h4>
-                      <p>Update your account password for better security</p>
-                    </div>
-                    <button 
-                      className="edit-btn"
-                      onClick={() => setShowPasswordReset(true)}
-                    >
-                      Change Password
-                    </button>
-                  </div>
-                ) : (
-                  <form onSubmit={handlePasswordReset} className="password-reset-form">
-                    <div className="form-group">
-                      <label>Current Password</label>
-                      <input
-                        type="password"
-                        value={passwordResetData.currentPassword}
-                        onChange={(e) => setPasswordResetData(prev => ({
-                          ...prev,
-                          currentPassword: e.target.value
-                        }))}
-                        required
-                        placeholder="Enter your current password"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>New Password</label>
-                      <input
-                        type="password"
-                        value={passwordResetData.newPassword}
-                        onChange={(e) => setPasswordResetData(prev => ({
-                          ...prev,
-                          newPassword: e.target.value
-                        }))}
-                        required
-                        placeholder="Enter new password (min 6 characters)"
-                        minLength="6"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Confirm New Password</label>
-                      <input
-                        type="password"
-                        value={passwordResetData.confirmPassword}
-                        onChange={(e) => setPasswordResetData(prev => ({
-                          ...prev,
-                          confirmPassword: e.target.value
-                        }))}
-                        required
-                        placeholder="Confirm your new password"
-                      />
-                    </div>
-                    <div className="edit-actions">
-                      <button type="submit" className="save-btn">
-                        Update Password
-                      </button>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Security Settings</h2>
+              <div className="mt-4 grid grid-cols-1 gap-4">
+                <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                  <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><FaLock /> Password Management</h3>
+                  {!showPasswordReset ? (
+                    <div className="mt-3 flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-4">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">Change Password</div>
+                        <div className="text-sm text-gray-600">Update your account password for better security</div>
+                      </div>
                       <button 
-                        type="button" 
-                        className="cancel-btn"
-                        onClick={() => {
-                          setShowPasswordReset(false);
-                          setPasswordResetData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                        }}
+                        className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setShowPasswordReset(true)}
                       >
-                        Cancel
+                        Change Password
                       </button>
                     </div>
-                  </form>
-                )}
-              </div>
-
-              <div className="settings-section">
-                <h3>🛡️ Account Security</h3>
-                <div className="setting-item">
-                  <div className="setting-info">
-                    <h4>Last Login</h4>
-                    <p>{new Date().toLocaleDateString()} - Current session</p>
-                  </div>
+                  ) : (
+                    <form onSubmit={handlePasswordReset} className="mt-4 grid grid-cols-1 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-600">Current Password</label>
+                        <input
+                          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                          type="password"
+                          value={passwordResetData.currentPassword}
+                          onChange={(e) => setPasswordResetData(prev => ({
+                            ...prev,
+                            currentPassword: e.target.value
+                          }))}
+                          required
+                          placeholder="Enter your current password"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600">New Password</label>
+                        <input
+                          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                          type="password"
+                          value={passwordResetData.newPassword}
+                          onChange={(e) => setPasswordResetData(prev => ({
+                            ...prev,
+                            newPassword: e.target.value
+                          }))}
+                          required
+                          placeholder="Enter new password (min 6 characters)"
+                          minLength="6"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600">Confirm New Password</label>
+                        <input
+                          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+                          type="password"
+                          value={passwordResetData.confirmPassword}
+                          onChange={(e) => setPasswordResetData(prev => ({
+                            ...prev,
+                            confirmPassword: e.target.value
+                          }))}
+                          required
+                          placeholder="Confirm your new password"
+                        />
+                      </div>
+                      <div className="mt-1 flex items-center justify-end gap-2">
+                        <button type="button" className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                          onClick={() => {
+                            setShowPasswordReset(false);
+                            setPasswordResetData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button type="submit" className="inline-flex items-center rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700">
+                          Update Password
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
-                <div className="setting-item">
-                  <div className="setting-info">
-                    <h4>Account Created</h4>
-                    <p>{new Date(currentUser?.createdAt || Date.now()).toLocaleDateString()}</p>
+
+                <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                  <h3 className="text-sm font-semibold text-gray-900">🛡️ Account Security</h3>
+                  <div className="mt-3 grid grid-cols-1 gap-2">
+                    <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm">
+                      <div className="text-gray-600">Last Login</div>
+                      <div className="font-medium text-gray-900">{new Date().toLocaleDateString()} - Current session</div>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm">
+                      <div className="text-gray-600">Account Created</div>
+                      <div className="font-medium text-gray-900">{new Date(currentUser?.createdAt || Date.now()).toLocaleDateString()}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -515,119 +512,96 @@ const UserProfile = () => {
           )}
 
           {activeTab === 'settings' && (
-            <div className="profile-settings">
-              <h2>Account Settings</h2>
-              
-              <div className="settings-section">
-                <h3>📧 Notifications</h3>
-                <div className="setting-item">
-                  <div className="setting-info">
-                    <h4>Email Newsletter</h4>
-                    <p>Receive wellness tips and product updates</p>
-                  </div>
-                  <div className="checkbox-group">
-                    <input
-                      type="checkbox"
-                      id="newsletter"
-                      name="newsletter"
-                      checked={isEditing ? formData.newsletter : currentUser?.newsletter}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                    />
-                    <label htmlFor="newsletter">Subscribe to newsletter</label>
-                  </div>
-                </div>
-                <div className="setting-item">
-                  <div className="setting-info">
-                    <h4>Order Updates</h4>
-                    <p>Get notified about order status changes</p>
-                  </div>
-                  <div className="checkbox-group">
-                    <input
-                      type="checkbox"
-                      id="orderUpdates"
-                      checked={true}
-                      disabled
-                    />
-                    <label htmlFor="orderUpdates">Always enabled</label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="settings-section">
-                <h3>💾 Data & Privacy</h3>
-                <div className="setting-item">
-                  <div className="setting-info">
-                    <h4>Download My Data</h4>
-                    <p>Export all your account data</p>
-                  </div>
-                  <button className="edit-btn">
-                    📥 Export Data
-                  </button>
-                </div>
-              </div>
-
-              <div className="settings-section" style={{ backgroundColor: '#fff5f5', border: '2px solid #fed7d7' }}>
-                <h3 style={{ color: '#e53e3e' }}>⚠️ Danger Zone</h3>
-                {!showDeleteAccount ? (
-                  <div className="setting-item">
-                    <div className="setting-info">
-                      <h4>Delete Account</h4>
-                      <p>Permanently delete your account and all associated data</p>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Account Settings</h2>
+              <div className="mt-4 grid grid-cols-1 gap-4">
+                <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                  <h3 className="text-sm font-semibold text-gray-900">📧 Notifications</h3>
+                  <div className="mt-3 space-y-3">
+                    <div className="flex items-start justify-between rounded-lg border border-gray-100 bg-gray-50 p-4">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">Email Newsletter</div>
+                        <div className="text-sm text-gray-600">Receive wellness tips and product updates</div>
+                      </div>
+                      <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700">
+                        {currentUser?.newsletter ? 'Subscribed' : 'Not subscribed'}
+                      </span>
                     </div>
-                    <button 
-                      className="cancel-btn"
-                      style={{ 
-                        backgroundColor: '#e53e3e', 
-                        color: 'white',
-                        border: 'none'
-                      }}
-                      onClick={() => setShowDeleteAccount(true)}
-                    >
-                      🗑️ Delete Account
+                    <div className="flex items-start justify-between rounded-lg border border-gray-100 bg-gray-50 p-4">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">Order Updates</div>
+                        <div className="text-sm text-gray-600">Get notified about order status changes</div>
+                      </div>
+                      <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-800">
+                        Always enabled
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                  <h3 className="text-sm font-semibold text-gray-900">💾 Data & Privacy</h3>
+                  <div className="mt-3 flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-4">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">Download My Data</div>
+                      <div className="text-sm text-gray-600">Export all your account data</div>
+                    </div>
+                    <button className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => pdfService.downloadUserProfilePDF(currentUser)}>
+                      📥 Export Data
                     </button>
                   </div>
-                ) : (
-                  <div className="delete-account-form">
-                    <h4 style={{ color: '#e53e3e', marginBottom: '15px' }}>Are you absolutely sure?</h4>
-                    <p style={{ marginBottom: '15px', color: '#666' }}>
-                      This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
-                    </p>
-                    <div className="form-group">
-                      <label>Type <strong>DELETE</strong> to confirm:</label>
-                      <input
-                        type="text"
-                        value={deleteConfirmation}
-                        onChange={(e) => setDeleteConfirmation(e.target.value)}
-                        placeholder="Type DELETE here"
-                        style={{ borderColor: '#e53e3e' }}
-                      />
-                    </div>
-                    <div className="edit-actions">
+                </div>
+
+                <div className="rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
+                  <h3 className="text-sm font-semibold text-red-700">⚠️ Danger Zone</h3>
+                  {!showDeleteAccount ? (
+                    <div className="mt-3 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4">
+                      <div>
+                        <div className="text-sm font-medium text-red-800">Delete Account</div>
+                        <div className="text-sm text-red-700">Permanently delete your account and all associated data</div>
+                      </div>
                       <button 
-                        className="cancel-btn"
-                        style={{ 
-                          backgroundColor: '#e53e3e', 
-                          color: 'white',
-                          border: 'none'
-                        }}
-                        onClick={handleDeleteAccount}
-                        disabled={deleteConfirmation !== 'DELETE'}
+                        className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                        onClick={() => setShowDeleteAccount(true)}
                       >
-                        I understand, delete my account
-                      </button>
-                      <button 
-                        className="edit-btn"
-                        onClick={() => {
-                          setShowDeleteAccount(false);
-                          setDeleteConfirmation('');
-                        }}
-                      >
-                        Cancel
+                        🗑️ Delete Account
                       </button>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="mt-3 rounded-lg border border-red-200 bg-white p-4">
+                      <h4 className="text-sm font-semibold text-red-700 mb-2">Are you absolutely sure?</h4>
+                      <p className="text-sm text-gray-700 mb-3">This action cannot be undone. This will permanently delete your account and remove all your data from our servers.</p>
+                      <div>
+                        <label className="text-xs text-gray-600">Type DELETE to confirm:</label>
+                        <input
+                          className="mt-1 w-full rounded-md border border-red-300 px-3 py-2 text-sm focus:border-red-500 focus:ring-red-500"
+                          type="text"
+                          value={deleteConfirmation}
+                          onChange={(e) => setDeleteConfirmation(e.target.value)}
+                          placeholder="Type DELETE here"
+                        />
+                      </div>
+                      <div className="mt-3 flex items-center justify-end gap-2">
+                        <button 
+                          className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                          onClick={handleDeleteAccount}
+                          disabled={deleteConfirmation !== 'DELETE'}
+                        >
+                          I understand, delete my account
+                        </button>
+                        <button 
+                          className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                          onClick={() => {
+                            setShowDeleteAccount(false);
+                            setDeleteConfirmation('');
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

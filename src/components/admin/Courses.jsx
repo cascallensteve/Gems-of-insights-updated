@@ -18,7 +18,6 @@ import {
   HiIdentification
 } from 'react-icons/hi2';
 import apiService from '../../services/api';
-import './Courses.css';
 import LoadingDots from '../LoadingDots';
 
 const Courses = () => {
@@ -210,60 +209,60 @@ const Courses = () => {
   };
 
   const renderCoursesTab = () => (
-    <div className="courses-section">
-      <div className="section-header">
-        <h2>Course Management</h2>
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="add-course-btn" onClick={() => { setShowForm(true); setEditingCourse(null); setCourseForm({ title: '', description: '', cost: '', published: false }); }}>
+    <div className="p-0">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-900">Course Management</h2>
+        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-flex items-center gap-2 rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-emerald-600" onClick={() => { setShowForm(true); setEditingCourse(null); setCourseForm({ title: '', description: '', cost: '', published: false }); }}>
           <HiPlus /> Add Course
         </motion.button>
       </div>
 
       {showForm && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="course-form-container">
-          <form onSubmit={handleCourseSubmit} className="course-form">
-            <h3>{editingCourse ? 'Edit Course' : 'Add New Course'}</h3>
-            <div className="form-group">
-              <label>Title</label>
-              <input value={courseForm.title} onChange={(e)=>setCourseForm({ ...courseForm, title: e.target.value })} required />
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="overflow-hidden rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <form onSubmit={handleCourseSubmit} className="space-y-3">
+            <div className="text-sm font-semibold text-gray-900">{editingCourse ? 'Edit Course' : 'Add New Course'}</div>
+            <div>
+              <label className="block text-sm text-gray-700">Title</label>
+              <input className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200" value={courseForm.title} onChange={(e)=>setCourseForm({ ...courseForm, title: e.target.value })} required />
             </div>
-            <div className="form-group">
-              <label>Description</label>
-              <textarea value={courseForm.description} onChange={(e)=>setCourseForm({ ...courseForm, description: e.target.value })} required />
+            <div>
+              <label className="block text-sm text-gray-700">Description</label>
+              <textarea className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200" value={courseForm.description} onChange={(e)=>setCourseForm({ ...courseForm, description: e.target.value })} required />
             </div>
-            <div className="form-group">
-              <label>Cost (KES)</label>
-              <input type="number" value={courseForm.cost} onChange={(e)=>setCourseForm({ ...courseForm, cost: e.target.value })} required />
+            <div>
+              <label className="block text-sm text-gray-700">Cost (KES)</label>
+              <input type="number" className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200" value={courseForm.cost} onChange={(e)=>setCourseForm({ ...courseForm, cost: e.target.value })} required />
             </div>
-            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className="flex items-center gap-2">
               <input id="published" type="checkbox" checked={Boolean(courseForm.published)} onChange={(e)=>setCourseForm({ ...courseForm, published: e.target.checked })} />
-              <label htmlFor="published">Published</label>
+              <label htmlFor="published" className="text-sm text-gray-700">Published</label>
             </div>
-            <div className="form-actions">
-              <button type="submit" className="save-btn">{editingCourse ? 'Update Course' : 'Add Course'}</button>
-              <button type="button" className="cancel-btn" onClick={()=>{ setShowForm(false); setEditingCourse(null); setCourseForm({ title:'', description:'', cost:'', published:false }); }}>Cancel</button>
+            <div className="flex items-center gap-2">
+              <button type="submit" className="inline-flex items-center rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-600">{editingCourse ? 'Update Course' : 'Add Course'}</button>
+              <button type="button" className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" onClick={()=>{ setShowForm(false); setEditingCourse(null); setCourseForm({ title:'', description:'', cost:'', published:false }); }}>Cancel</button>
             </div>
           </form>
         </motion.div>
       )}
 
       {loading ? (
-        <div className="loading-container"><LoadingDots text="Loading courses..." /></div>
+        <div className="grid place-items-center rounded-xl border border-emerald-100 bg-white p-6 shadow-sm"><LoadingDots text="Loading courses..." /></div>
       ) : (
-        <div className="courses-grid">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map(course => (
-            <motion.div key={course.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="course-card">
-              <div className="course-content">
-                <h3>{course.title}</h3>
-                <p>{course.description}</p>
-                <div className="course-meta">
-                  <span className="course-cost">{formatCurrency(course.cost)}</span>
-                  <span className="course-id">ID: {course.id}</span>
-                  <span className="course-status" style={{ marginLeft: 'auto', fontWeight: 600, color: course.published ? '#1b5e20' : '#92400e' }}>{course.published ? 'Published' : 'Draft'}</span>
+            <motion.div key={course.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">{course.title}</h3>
+                <p className="mt-1 text-sm text-gray-700">{course.description}</p>
+                <div className="mt-2 flex items-center gap-2 text-sm">
+                  <span className="font-semibold text-gray-900">{formatCurrency(course.cost)}</span>
+                  <span className="text-xs text-gray-600">ID: {course.id}</span>
+                  <span className={`ml-auto text-xs font-semibold ${course.published ? 'text-emerald-700' : 'text-amber-700'}`}>{course.published ? 'Published' : 'Draft'}</span>
                 </div>
-                <div className="course-actions">
-                  <button className="edit-btn" onClick={()=>handleEditCourse(course)}><HiPencilSquare /> Edit</button>
-                  <button className="delete-btn" onClick={()=>handleDeleteCourse(course.id)}><HiTrash /> Delete</button>
-                  <button className="publish-btn" onClick={async ()=>{ try { const payload = { title: course.title, description: course.description, cost: course.cost, published: !course.published }; await apiService.courses.editCourse(course.id, payload); loadCourses(); } catch (e) { console.error('Failed to toggle publish:', e); } }}>{course.published ? 'Unpublish' : 'Publish'}</button>
+                <div className="mt-3 flex items-center gap-2">
+                  <button className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50" onClick={()=>handleEditCourse(course)}><HiPencilSquare /> Edit</button>
+                  <button className="inline-flex items-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700" onClick={()=>handleDeleteCourse(course.id)}><HiTrash /> Delete</button>
+                  <button className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50" onClick={async ()=>{ try { const payload = { title: course.title, description: course.description, cost: course.cost, published: !course.published }; await apiService.courses.editCourse(course.id, payload); loadCourses(); } catch (e) { console.error('Failed to toggle publish:', e); } }}>{course.published ? 'Unpublish' : 'Publish'}</button>
                 </div>
               </div>
             </motion.div>
@@ -274,30 +273,29 @@ const Courses = () => {
   );
 
   const renderEnrollmentsTab = () => (
-    <div className="enrollments-section">
-      <div className="enrollments-header">
-        <div className="header-content">
-          <h2>Student Enrollments</h2>
-          <p>Manage and view all course enrollments</p>
+    <div className="p-0">
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-semibold text-gray-900">Student Enrollments</h2>
+          <p className="text-sm text-gray-700">Manage and view all course enrollments</p>
         </div>
-        <div className="header-actions">
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="download-btn" onClick={downloadCSV}>
+        <div className="flex items-center gap-2">
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" onClick={downloadCSV}>
             <HiArrowDownTray /> Export CSV
           </motion.button>
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="print-btn" onClick={downloadPDF}>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-flex items-center gap-2 rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-600" onClick={downloadPDF}>
             <HiDocumentArrowDown /> Download PDF
           </motion.button>
         </div>
       </div>
 
-      <div className="filters-section">
-        <div className="search-box">
-          <HiMagnifyingGlass className="search-icon" />
-          <input placeholder="Search enrollments..." value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} />
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="relative">
+          <HiMagnifyingGlass className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-gray-500" />
+          <input className="w-64 rounded-md border border-gray-300 pl-8 pr-2 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Search enrollments..." value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} />
         </div>
-        <div className="filter-dropdown">
-          <HiFunnel className="filter-icon" />
-          <select value={filterStatus} onChange={(e)=>setFilterStatus(e.target.value)}>
+        <div>
+          <select className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200" value={filterStatus} onChange={(e)=>setFilterStatus(e.target.value)}>
             <option value="all">All Status</option>
             <option value="Active">Active</option>
             <option value="Pending">Pending</option>
@@ -307,103 +305,97 @@ const Courses = () => {
       </div>
 
       {enrollmentsLoading ? (
-        <div className="loading-container"><LoadingDots text="Loading enrollments..." /></div>
+        <div className="grid place-items-center rounded-xl border border-emerald-100 bg-white p-6 shadow-sm"><LoadingDots text="Loading enrollments..." /></div>
       ) : filteredEnrollments.length === 0 ? (
-        <div className="empty-state"><HiUsers className="empty-icon" /><h3>No Enrollments Found</h3><p>No student enrollments match your search criteria.</p></div>
+        <div className="grid place-items-center rounded-xl border border-emerald-100 bg-white p-6 text-center text-sm text-gray-700 shadow-sm"><HiUsers className="mb-2 text-2xl" /><h3 className="font-semibold text-gray-900">No Enrollments Found</h3><p>No student enrollments match your search criteria.</p></div>
       ) : (
-        <div className="enrollments-table-container">
-          <div className="table-header"><h3>Enrollment Details ({filteredEnrollments.length} students)</h3><div className="table-actions"><span className="export-info">Ready to export</span></div></div>
-          <div className="enrollments-table-wrapper">
-            <table className="enrollments-table">
-              <thead>
+        <div className="overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b px-3 py-2"><h3 className="text-sm font-semibold text-gray-900">Enrollment Details ({filteredEnrollments.length} students)</h3><div className="text-xs text-gray-600">Ready to export</div></div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-emerald-50 text-gray-900">
                 <tr>
-                  <th></th>
-                  <th>ID</th>
-                  <th>Student</th>
-                  <th>Contact</th>
-                  <th>Course</th>
-                  <th>Location</th>
-                  <th>Date</th>
-                  <th>Status</th>
+                  <th className="px-3 py-2"></th>
+                  <th className="px-3 py-2">ID</th>
+                  <th className="px-3 py-2">Student</th>
+                  <th className="px-3 py-2">Contact</th>
+                  <th className="px-3 py-2">Course</th>
+                  <th className="px-3 py-2">Location</th>
+                  <th className="px-3 py-2">Date</th>
+                  <th className="px-3 py-2">Status</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-100">
                 {filteredEnrollments.map((enr, i) => {
                   const rowKey = enr.id || `ENR-${i+1}`;
                   return (
                     <React.Fragment key={rowKey}>
-                      <tr className="enrollment-row">
-                        <td className="expand-cell" data-label="">
-                          <button className={`expand-toggle ${expandedRowId === rowKey ? 'expanded' : ''}`} onClick={() => toggleExpandRow(rowKey)} aria-label="Toggle details">
+                      <tr className="hover:bg-gray-50">
+                        <td className="px-3 py-2" data-label="">
+                          <button className={`inline-flex items-center rounded-md border px-2 py-1 text-xs ${expandedRowId === rowKey ? 'border-emerald-600 text-emerald-700' : 'border-gray-300 hover:bg-gray-50'}`} onClick={() => toggleExpandRow(rowKey)} aria-label="Toggle details">
                             {expandedRowId === rowKey ? <HiChevronUp /> : <HiChevronDown />}
                           </button>
                         </td>
-                        <td className="enrollment-id" data-label="ID">{rowKey}</td>
-                        <td className="student-info" data-label="Student">
-                      <div className="student-name">{enr.firstName || 'N/A'}</div>
-                      <div className="other-names">{enr.otherNames || 'No other names'}</div>
-                      <div className="personal-details">
-                        <span className="detail-item"><span className="detail-label">Gender:</span><span className="detail-value">{enr.gender || 'N/A'}</span></span>
-                        <span className="detail-item"><span className="detail-label">Age:</span><span className="detail-value">{enr.yearOfBirth ? new Date().getFullYear() - Number(enr.yearOfBirth) : 'N/A'}</span></span>
-                      </div>
+                        <td className="px-3 py-2" data-label="ID">{rowKey}</td>
+                        <td className="px-3 py-2" data-label="Student">
+                          <div className="text-sm font-medium text-gray-900">{enr.firstName || 'N/A'}</div>
+                          <div className="text-xs text-gray-600">{enr.otherNames || 'No other names'}</div>
+                          <div className="text-xs text-gray-600">Gender: {enr.gender || 'N/A'} • Age: {enr.yearOfBirth ? new Date().getFullYear() - Number(enr.yearOfBirth) : 'N/A'}</div>
                     </td>
-                        <td className="contact-info" data-label="Contact">
-                      <div className="contact-item"><HiEnvelope className="contact-icon" /><span>{enr.email || 'N/A'}</span></div>
-                      <div className="contact-item"><HiPhone className="contact-icon" /><span>{enr.phoneNumber || 'N/A'}</span></div>
-                      {enr.otherNumber && (<div className="contact-item"><HiPhone className="contact-icon" /><span>{enr.otherNumber}</span></div>)}
+                        <td className="px-3 py-2" data-label="Contact">
+                          <div className="text-xs text-gray-700 flex items-center gap-1"><HiEnvelope /> <span>{enr.email || 'N/A'}</span></div>
+                          <div className="text-xs text-gray-700 flex items-center gap-1"><HiPhone /> <span>{enr.phoneNumber || 'N/A'}</span></div>
+                          {enr.otherNumber && (<div className="text-xs text-gray-700 flex items-center gap-1"><HiPhone /> <span>{enr.otherNumber}</span></div>)}
                     </td>
-                        <td className="course-details" data-label="Course">
-                      <div className="course-title">{enr.selectedModule || 'N/A'}</div>
-                      <div className="course-info">
-                        <span>Cost: {formatCurrency(enr.courseCost || 0)}</span>
-                        {enr.church && <span>Church: {enr.church}</span>}
-                      </div>
+                        <td className="px-3 py-2" data-label="Course">
+                          <div className="text-sm font-medium text-gray-900">{enr.selectedModule || 'N/A'}</div>
+                          <div className="text-xs text-gray-600">Cost: {formatCurrency(enr.courseCost || 0)} {enr.church && <>• Church: {enr.church}</>}</div>
                     </td>
-                        <td className="address-info" data-label="Location">
-                      <div className="address-item"><HiMapPin className="contact-icon" /><span>{enr.city || 'N/A'}, {enr.country || 'N/A'}</span></div>
-                      {enr.homeAddress && (<div className="address-item"><span className="address-label">Address:</span><span className="address-value">{enr.homeAddress}</span></div>)}
+                        <td className="px-3 py-2" data-label="Location">
+                          <div className="text-xs text-gray-700 flex items-center gap-1"><HiMapPin /> <span>{enr.city || 'N/A'}, {enr.country || 'N/A'}</span></div>
+                          {enr.homeAddress && (<div className="text-xs text-gray-700">Address: {enr.homeAddress}</div>)}
                     </td>
-                        <td className="enrollment-date" data-label="Date">{formatDate(enr.enrollmentDate)}</td>
-                        <td className="enrollment-status" data-label="Status"><span className={`status-badge ${String(enr.status || 'active').toLowerCase()}`}>{enr.status || 'Active'}</span></td>
+                        <td className="px-3 py-2" data-label="Date">{formatDate(enr.enrollmentDate)}</td>
+                        <td className="px-3 py-2" data-label="Status"><span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ring-1 ${String(enr.status || 'active').toLowerCase() === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-100' : String(enr.status || '').toLowerCase() === 'pending' ? 'bg-amber-50 text-amber-700 ring-amber-100' : 'bg-sky-50 text-sky-700 ring-sky-100'}`}>{enr.status || 'Active'}</span></td>
                       </tr>
                       {expandedRowId === rowKey && (
-                        <tr className="enrollment-details-row">
-                          <td colSpan={8}>
-                            <div className="enrollment-details-panel">
-                              <div className="detail-group">
-                                <div className="detail-title"><HiIdentification /> Identity</div>
-                                <div className="detail-grid">
-                                  <div><span>First name</span><strong>{enr.firstName || 'N/A'}</strong></div>
-                                  <div><span>Other names</span><strong>{enr.otherNames || 'N/A'}</strong></div>
-                                  <div><span>Gender</span><strong>{enr.gender || 'N/A'}</strong></div>
-                                  <div><span>Year of birth</span><strong>{enr.yearOfBirth || 'N/A'}</strong></div>
+                        <tr className="bg-gray-50/60">
+                          <td colSpan={8} className="px-3 py-3">
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                              <div className="rounded-md border border-gray-200 bg-white p-3">
+                                <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-gray-900"><HiIdentification /> Identity</div>
+                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
+                                  <div><span className="text-gray-500">First name</span><div className="font-semibold text-gray-900">{enr.firstName || 'N/A'}</div></div>
+                                  <div><span className="text-gray-500">Other names</span><div className="font-semibold text-gray-900">{enr.otherNames || 'N/A'}</div></div>
+                                  <div><span className="text-gray-500">Gender</span><div className="font-semibold text-gray-900">{enr.gender || 'N/A'}</div></div>
+                                  <div><span className="text-gray-500">Year of birth</span><div className="font-semibold text-gray-900">{enr.yearOfBirth || 'N/A'}</div></div>
                                 </div>
                               </div>
-                              <div className="detail-group">
-                                <div className="detail-title">Contact</div>
-                                <div className="detail-grid">
-                                  <div><span>Email</span><strong>{enr.email || 'N/A'}</strong></div>
-                                  <div><span>Phone</span><strong>{enr.phoneNumber || 'N/A'}</strong></div>
-                                  <div><span>Other phone</span><strong>{enr.otherNumber || '—'}</strong></div>
+                              <div className="rounded-md border border-gray-200 bg-white p-3">
+                                <div className="mb-1 text-sm font-semibold text-gray-900">Contact</div>
+                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
+                                  <div><span className="text-gray-500">Email</span><div className="font-semibold text-gray-900">{enr.email || 'N/A'}</div></div>
+                                  <div><span className="text-gray-500">Phone</span><div className="font-semibold text-gray-900">{enr.phoneNumber || 'N/A'}</div></div>
+                                  <div><span className="text-gray-500">Other phone</span><div className="font-semibold text-gray-900">{enr.otherNumber || '—'}</div></div>
                                 </div>
                               </div>
-                              <div className="detail-group">
-                                <div className="detail-title">Address</div>
-                                <div className="detail-grid">
-                                  <div><span>Address</span><strong>{enr.homeAddress || 'N/A'}</strong></div>
-                                  <div><span>City</span><strong>{enr.city || 'N/A'}</strong></div>
-                                  <div><span>Country</span><strong>{enr.country || 'N/A'}</strong></div>
+                              <div className="rounded-md border border-gray-200 bg-white p-3">
+                                <div className="mb-1 text-sm font-semibold text-gray-900">Address</div>
+                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
+                                  <div><span className="text-gray-500">Address</span><div className="font-semibold text-gray-900">{enr.homeAddress || 'N/A'}</div></div>
+                                  <div><span className="text-gray-500">City</span><div className="font-semibold text-gray-900">{enr.city || 'N/A'}</div></div>
+                                  <div><span className="text-gray-500">Country</span><div className="font-semibold text-gray-900">{enr.country || 'N/A'}</div></div>
                                 </div>
                               </div>
-                              <div className="detail-group">
-                                <div className="detail-title">Course</div>
-                                <div className="detail-grid">
-                                  <div><span>Module</span><strong>{enr.selectedModule || 'N/A'}</strong></div>
-                                  <div><span>Cost</span><strong>{formatCurrency(enr.courseCost || 0)}</strong></div>
-                                  <div><span>Enrollment</span><strong>{formatDate(enr.enrollmentDate)}</strong></div>
-                                  <div><span>Status</span><strong>{enr.status || 'Active'}</strong></div>
-                                  {enr.church && <div><span>Church</span><strong>{enr.church}</strong></div>}
-                                  {enr.membershipDuration && <div><span>Membership</span><strong>{enr.membershipDuration}</strong></div>}
+                              <div className="rounded-md border border-gray-200 bg-white p-3">
+                                <div className="mb-1 text-sm font-semibold text-gray-900">Course</div>
+                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
+                                  <div><span className="text-gray-500">Module</span><div className="font-semibold text-gray-900">{enr.selectedModule || 'N/A'}</div></div>
+                                  <div><span className="text-gray-500">Cost</span><div className="font-semibold text-gray-900">{formatCurrency(enr.courseCost || 0)}</div></div>
+                                  <div><span className="text-gray-500">Enrollment</span><div className="font-semibold text-gray-900">{formatDate(enr.enrollmentDate)}</div></div>
+                                  <div><span className="text-gray-500">Status</span><div className="font-semibold text-gray-900">{enr.status || 'Active'}</div></div>
+                                  {enr.church && <div><span className="text-gray-500">Church</span><div className="font-semibold text-gray-900">{enr.church}</div></div>}
+                                  {enr.membershipDuration && <div><span className="text-gray-500">Membership</span><div className="font-semibold text-gray-900">{enr.membershipDuration}</div></div>}
                                 </div>
                               </div>
                             </div>
@@ -422,12 +414,12 @@ const Courses = () => {
   );
 
   return (
-    <div className="admin-courses">
-      <div className="tab-navigation">
-        <button className={`tab-button ${activeTab === 'courses' ? 'active' : ''}`} onClick={()=>setActiveTab('courses')}>
+    <div className="p-4">
+      <div className="mb-3 inline-flex rounded-md border border-emerald-100 bg-white p-1 shadow-sm">
+        <button className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm ${activeTab === 'courses' ? 'bg-emerald-700 text-white' : 'text-gray-700 hover:bg-gray-50'}`} onClick={()=>setActiveTab('courses')}>
           <HiAcademicCap /> Courses
         </button>
-        <button className={`tab-button ${activeTab === 'enrollments' ? 'active' : ''}`} onClick={()=>setActiveTab('enrollments')}>
+        <button className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm ${activeTab === 'enrollments' ? 'bg-emerald-700 text-white' : 'text-gray-700 hover:bg-gray-50'}`} onClick={()=>setActiveTab('enrollments')}>
           <HiUsers /> Enrollments ({enrollments.length})
         </button>
       </div>

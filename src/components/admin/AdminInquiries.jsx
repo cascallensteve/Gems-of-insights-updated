@@ -46,8 +46,8 @@ const AdminInquiries = () => {
 
   const handleDownload = (e, c) => {
     e.stopPropagation();
-    pdfService.downloadInquiryPDF(c);
-    showSuccess('Downloading inquiry PDF...');
+    pdfService.printInquiry(c);
+    showSuccess('Opening printable inquiry...');
   };
 
   const handleDelete = (e, id) => {
@@ -61,72 +61,74 @@ const AdminInquiries = () => {
   };
 
   return (
-    <div className="admin-inquiries">
-      <h2>Inquiries</h2>
+    <div className="p-4">
+      <div className="mb-3 text-sm font-semibold text-gray-900">Inquiries</div>
       {selected && (
-        <div className="inquiry-detail-card" style={{ marginBottom: 14 }}>
-          <div className="detail-header">
-            <div className="detail-title">{selected.full_name}</div>
-            <div className="detail-actions">
-              <button className="btn btn-sm" onClick={() => pdfService.downloadInquiryPDF(selected)}>Download PDF</button>
-              <button className="btn btn-sm btn-danger" onClick={(e) => handleDelete(e, selected.id)}>Remove</button>
-              <button className="btn btn-sm" onClick={() => setSelected(null)}>Close</button>
+        <div className="mb-3 rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-semibold text-gray-900">{selected.full_name}</div>
+            <div className="flex items-center gap-2">
+              <button className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50" onClick={() => pdfService.printInquiry(selected)}>Print</button>
+              <button className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700" onClick={(e) => handleDelete(e, selected.id)}>Remove</button>
+              <button className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50" onClick={() => setSelected(null)}>Close</button>
             </div>
           </div>
-          <div className="detail-grid">
+          <div className="mt-2 grid grid-cols-1 gap-2 text-sm text-gray-700 sm:grid-cols-2">
             <div><strong>Email:</strong> {selected.email}</div>
             <div><strong>Phone:</strong> {selected.phone_number}</div>
-            <div><strong>Subject:</strong> {selected.subject}</div>
+            <div className="sm:col-span-2"><strong>Subject:</strong> {selected.subject}</div>
           </div>
-          <div className="detail-message">
+          <div className="mt-2 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-800">
             {selected.message}
           </div>
         </div>
       )}
-      <div className="admin-controls" style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-        <button className="btn btn-danger" onClick={() => window.location.reload()}>Refresh</button>
-        <button className="btn btn-primary" onClick={() => pdfService.downloadInquiriesListPDF(contacts, 'Inquiries List')}>Download PDF</button>
+      <div className="mb-3 flex items-center gap-2">
+        <button className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700" onClick={() => window.location.reload()}>Refresh</button>
+        <button className="inline-flex items-center rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-600" onClick={() => pdfService.printInquiriesList(contacts, 'Inquiries List')}>Print All</button>
         {selected && (
           <>
-            <button className="btn btn-secondary" onClick={() => pdfService.downloadInquiryPDF(selected)}>Download Selected</button>
-            <button className="btn btn-danger" onClick={(e) => handleDelete(e, selected.id)}>Delete Selected</button>
+            <button className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" onClick={() => pdfService.printInquiry(selected)}>Print Selected</button>
+            <button className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700" onClick={(e) => handleDelete(e, selected.id)}>Delete Selected</button>
           </>
         )}
       </div>
-      {loading && <div className="admin-table-status">Loading...</div>}
-      {error && <div className="admin-table-error">{error}</div>}
+      {loading && <div className="rounded-md border border-gray-200 bg-white p-3 text-sm text-gray-700">Loading...</div>}
+      {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
       {!loading && !error && (
-        <div className="admin-table-wrapper">
-          <table className="admin-table" cellSpacing="0" cellPadding="0">
-            <thead>
+        <div className="overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-sm">
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-emerald-50 text-gray-900">
               <tr>
-                <th>ID</th>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Subject</th>
-                <th>Message</th>
-                <th>Actions</th>
+                <th className="px-3 py-2">ID</th>
+                <th className="px-3 py-2">Full Name</th>
+                <th className="px-3 py-2">Email</th>
+                <th className="px-3 py-2">Phone</th>
+                <th className="px-3 py-2">Subject</th>
+                <th className="px-3 py-2">Message</th>
+                <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {contacts.length === 0 && (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center' }}>No inquiries yet.</td>
+                  <td className="px-3 py-2 text-center" colSpan="6">No inquiries yet.</td>
                 </tr>
               )}
               {contacts.map(c => (
-                <tr key={c.id} onClick={() => setSelected(c)} style={{ cursor: 'pointer' }}>
-                  <td>{c.id}</td>
-                  <td>{c.full_name}</td>
-                  <td>{c.email}</td>
-                  <td>{c.phone_number}</td>
-                  <td>{c.subject}</td>
-                  <td>{c.message}</td>
-                  <td>
-                    <button className="btn btn-sm" onClick={(e) => handleView(e, c.id)}>View</button>
-                    <button className="btn btn-sm" onClick={(e) => handleDownload(e, c)}>PDF</button>
-                    <button className="btn btn-sm btn-danger" onClick={(e) => handleDelete(e, c.id)}>Delete</button>
+                <tr key={c.id} onClick={() => setSelected(c)} className="cursor-pointer hover:bg-gray-50">
+                  <td className="px-3 py-2">{c.id}</td>
+                  <td className="px-3 py-2">{c.full_name}</td>
+                  <td className="px-3 py-2">{c.email}</td>
+                  <td className="px-3 py-2">{c.phone_number}</td>
+                  <td className="px-3 py-2">{c.subject}</td>
+                  <td className="px-3 py-2">{c.message}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-1">
+                      <button className="inline-flex items-center rounded-md border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50" onClick={(e) => handleView(e, c.id)}>View</button>
+                      <button className="inline-flex items-center rounded-md border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50" onClick={(e) => handleDownload(e, c)}>Print</button>
+                      <button className="inline-flex items-center rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700" onClick={(e) => handleDelete(e, c.id)}>Delete</button>
+                    </div>
                   </td>
                 </tr>
               ))}

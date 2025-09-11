@@ -4,7 +4,6 @@ import { useCart } from '../context/CartContext';
 import LazyLoad from 'react-lazyload';
 import { HiPlus, HiEye } from 'react-icons/hi2';
 import QuickViewModal from './QuickViewModal';
-import './Shop.css';
 
 const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
   const { addToCart } = useCart();
@@ -936,40 +935,40 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
   };
 
   return (
-    <section className="shop-section">
-      <div className="shop-container">
-        <div className="shop-header">
-          <h1 className="shop-title">Gems of Insight Shop</h1>
-          <p className="shop-subtitle">Premium Herbs, Extracts & Supplements for Holistic Wellness</p>
+    <section className="py-10 bg-white">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Gems of Insight Shop</h1>
+          <p className="text-gray-600 mt-1">Premium Herbs, Extracts & Supplements for Holistic Wellness</p>
         </div>
 
         {/* Best Sellers Section */}
         {bestSellers && bestSellers.length > 0 && (
-          <div className="best-sellers-section">
-            <h2 className="section-title">Best Selling Products</h2>
-            <div className="best-sellers-grid">
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Best Selling Products</h2>
+            <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
               {bestSellers.slice(0, 4).map((product) => (
-                <div key={product.id} className="best-seller-card">
-                  <div className="product-image">
-                    <img src={product.image} alt={product.name} />
-                    <div className="product-badge">⭐ Best Seller</div>
-                    <div className="product-actions">
+                <div key={product.id} className="group rounded-md border border-gray-100 shadow-sm overflow-hidden bg-white">
+                  <div className="relative">
+                    <img src={product.image} alt={product.name} className="h-40 w-full object-cover" />
+                    <div className="absolute left-2 top-2 inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white">⭐ Best Seller</div>
+                    <div className="absolute bottom-2 right-2 flex gap-2">
                       <button 
-                        className="action-btn quick-view"
+                        className="inline-flex items-center justify-center rounded-full bg-white/90 text-gray-800 w-8 h-8 shadow hover:bg-white"
                         onClick={() => handleQuickView(product)}
                         title="Quick View"
                       >
                         👁️
                       </button>
                       <button 
-                        className="action-btn view-details"
+                        className="inline-flex items-center justify-center rounded-full bg-white/90 text-gray-800 w-8 h-8 shadow hover:bg-white"
                         onClick={() => handleProductView(product)}
                         title="View Details"
                       >
                         📋
                       </button>
                       <button 
-                        className="action-btn add-to-cart"
+                        className="inline-flex items-center justify-center rounded-full bg-emerald-600 text-white w-9 h-9 shadow hover:bg-emerald-700"
                         onClick={() => handleAddToCart(product)}
                         title="Add to Cart"
                       >
@@ -977,10 +976,10 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
                       </button>
                     </div>
                   </div>
-                  <div className="product-info">
-                    <h3>{product.name}</h3>
-                    <p className="price">KSH {product.price}</p>
-                    <p className="product-category-badge">{product.category}</p>
+                  <div className="p-3">
+                    <h3 className="line-clamp-2 font-semibold text-sm text-gray-900">{product.name}</h3>
+                    <p className="text-base font-semibold text-gray-900 mt-1">KSH {product.price}</p>
+                    <p className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 mt-1">{product.category}</p>
                   </div>
                 </div>
               ))}
@@ -989,26 +988,26 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
         )}
 
         {/* Desktop layout: sidebar + content */}
-        <div className="shop-layout">
-          <aside className="shop-sidebar">
-            <div className="sidebar-card">
-              <h3 className="sidebar-title">Search products</h3>
+        <div className="grid gap-6 md:grid-cols-12">
+          <aside className="md:col-span-3">
+            <div className="rounded-md border border-gray-100 bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-900">Search products</h3>
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="sidebar-search"
+                className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
               />
             </div>
 
-            <div className="sidebar-card">
-              <h3 className="sidebar-title">Categories</h3>
-              <ul className="category-list">
+            <div className="mt-4 rounded-md border border-gray-100 bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-900">Categories</h3>
+              <ul className="mt-2 space-y-1">
                 {categories.map((category) => (
                   <li key={category.value}>
                     <button
-                      className={`category-item ${selectedCategory === category.value ? 'active' : ''}`}
+                      className={`w-full text-left rounded-md px-2 py-1 text-sm ${selectedCategory === category.value ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-gray-50'}`}
                       onClick={() => {
                         setSelectedCategory(category.value);
                         setSelectedSubCategory('all');
@@ -1022,11 +1021,11 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
               </ul>
 
               {showSubCategories && (
-                <ul className="subcategory-list">
+                <ul className="mt-2 space-y-1">
                   {subCategories[selectedCategory]?.map((subCat) => (
                     <li key={subCat}>
                       <button
-                        className={`subcategory-item ${selectedSubCategory === subCat ? 'active' : ''}`}
+                        className={`w-full text-left rounded-md px-2 py-1 text-sm ${selectedSubCategory === subCat ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-gray-50'}`}
                         onClick={() => setSelectedSubCategory(subCat)}
                       >
                         {subCat}
@@ -1037,27 +1036,27 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
               )}
             </div>
 
-            <div className="sidebar-actions">
-              <button onClick={resetFilters} className="reset-filters-btn full-width">Clear Filters</button>
+            <div className="mt-4">
+              <button onClick={resetFilters} className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50">Clear Filters</button>
             </div>
           </aside>
 
-          <div className="shop-content">
-        <div className="shop-filters">
-          <div className="filters-top">
-            <div className="search-filter">
+          <div className="md:col-span-9">
+        <div className="rounded-md border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="flex-1">
               <input
                 type="text"
                 placeholder="Search herbs, supplements, or health benefits..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="shop-search"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
               />
             </div>
             
-            <div className="view-controls">
+            <div className="flex items-center gap-2">
               <button 
-                className={`view-toggle ${viewMode === 'grid' ? 'active' : ''}`}
+                className={`inline-flex items-center justify-center rounded-md border px-2 py-1 ${viewMode === 'grid' ? 'border-emerald-600 text-emerald-700' : 'border-gray-300 hover:bg-gray-50'}`}
                 onClick={() => setViewMode('grid')}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -1068,7 +1067,7 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
                 </svg>
               </button>
               <button 
-                className={`view-toggle ${viewMode === 'list' ? 'active' : ''}`}
+                className={`inline-flex items-center justify-center rounded-md border px-2 py-1 ${viewMode === 'list' ? 'border-emerald-600 text-emerald-700' : 'border-gray-300 hover:bg-gray-50'}`}
                 onClick={() => setViewMode('list')}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -1080,12 +1079,12 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
             </div>
           </div>
 
-          <div className="filters-bottom">
-            <div className="category-filters">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
               <select 
                 value={selectedCategory} 
                 onChange={handleCategoryChange}
-                className="filter-select"
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
               >
                 {categories.map((category) => (
                   <option key={category.value} value={category.value}>
@@ -1098,7 +1097,7 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
                 <select
                   value={selectedSubCategory}
                   onChange={(e) => setSelectedSubCategory(e.target.value)}
-                  className="filter-select"
+                  className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
                 >
                   <option value="all">All {categories.find(c => c.value === selectedCategory)?.name}</option>
                   {subCategories[selectedCategory]?.map((subCat) => (
@@ -1113,7 +1112,7 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
             <select 
               value={priceRange} 
               onChange={(e) => setPriceRange(e.target.value)}
-              className="filter-select"
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
             >
               {priceRanges.map((range) => (
                 <option key={range.value} value={range.value}>
@@ -1125,7 +1124,7 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
             <select 
               value={selectedBenefit} 
               onChange={(e) => setSelectedBenefit(e.target.value)}
-              className="filter-select"
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
             >
               {benefits.map((benefit) => (
                 <option key={benefit.value} value={benefit.value}>
@@ -1137,7 +1136,7 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
             <select 
               value={sortBy} 
               onChange={(e) => setSortBy(e.target.value)}
-              className="filter-select"
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
             >
               <option value="default">Default (Featured)</option>
               <option value="popularity">Most Popular</option>
@@ -1148,81 +1147,62 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
               <option value="name">Alphabetical</option>
             </select>
 
-            <div className="results-count">
+            <div className="ml-auto text-sm text-gray-700">
               {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
             </div>
             
-            <button 
-              onClick={resetFilters}
-              className="reset-filters-btn"
-            >
-              Clear Filters
-            </button>
+            <button onClick={resetFilters} className="inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50">Clear Filters</button>
           </div>
         </div>
-        <div className={`shop-products ${viewMode}`}>
+        <div className={`mt-4 ${viewMode === 'grid' ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-3'}`}>
           {paginatedProducts.map(product => (
-            <div key={product.id} className={`shop-product-card ${viewMode}`}>
-              {product.sale && <span className="sale-badge">Sale!</span>}
+            <div key={product.id} className={`${viewMode === 'grid' ? 'group rounded-md border border-gray-100 shadow-sm overflow-hidden bg-white' : 'flex items-center gap-3 rounded-md border border-gray-100 bg-white p-3 shadow-sm'}`}>
+              {product.sale && <span className="absolute m-2 inline-flex items-center justify-center rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white">Sale!</span>}
               
-              <div className="product-image">
-                <LazyLoad height={150} offset={100} placeholder={<div className="image-placeholder">Loading...</div>}>
-                  <img src={product.image} alt={product.name} />
+              <div className={`${viewMode === 'grid' ? 'relative' : 'relative w-32 flex-shrink-0'}`}>
+                <LazyLoad height={150} offset={100} placeholder={<div className="h-32 bg-gray-100"/>}>
+                  <img src={product.image} alt={product.name} className={`${viewMode === 'grid' ? 'h-40 w-full' : 'h-24 w-32'} object-cover`} />
                 </LazyLoad>
-                <div className="product-overlay">
-                  <div className="hover-actions">
-                    <button 
-                      className="icon-action"
-                      title="Add to cart"
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      <HiPlus />
-                    </button>
-                    <button 
-                      className="icon-action"
-                      title="Quick view"
-                      onClick={() => handleQuickView(product)}
-                    >
-                      <HiEye />
-                    </button>
-                  </div>
+                <button 
+                  className="absolute right-2 top-2 inline-flex items-center justify-center rounded-full bg-white/90 text-gray-800 w-8 h-8 shadow hover:bg-white"
+                  title="Quick view"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickView(product); }}
+                >
+                  <HiEye />
+                </button>
+                <div className="absolute bottom-2 right-2">
+                  <button className="inline-flex items-center justify-center rounded-full bg-emerald-600 text-white w-9 h-9 shadow hover:bg-emerald-700" title="Add to cart" onClick={() => handleAddToCart(product)}><HiPlus /></button>
                 </div>
               </div>
 
-              <div className="product-details">
-                <div className="product-category-badge">{product.category}</div>
-                <h3 className="product-name">{product.name}</h3>
+              <div className={`${viewMode === 'grid' ? 'p-3' : 'flex-1'}`}>
+                <div className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">{product.category}</div>
+                <h3 className={`${viewMode === 'grid' ? 'mt-2' : ''} line-clamp-2 font-semibold text-sm text-gray-900`}>{product.name}</h3>
 
-                <div className="product-price">
+                <div className="mt-1 flex items-center gap-2">
                   {product.originalPrice && (
-                    <span className="original-price">KSH {product.originalPrice}</span>
+                    <span className="text-xs text-gray-400 line-through">KES {product.originalPrice}</span>
                   )}
-                  <span className="current-price">KSH {product.price}</span>
+                  <span className="text-base font-semibold text-gray-900">KES {product.price}</span>
                 </div>
-                {/* Add to Cart button visible on mobile and desktop, like BestSellers */}
-                <button 
-                  className="add-to-cart-btn"
-                  onClick={() => handleAddToCart(product)}
-                >
-                  Add to Cart
-                </button>
+                <button className="mt-2 inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-3 py-1.5 text-sm font-medium shadow hover:bg-emerald-600" onClick={() => handleAddToCart(product)}>Add to Cart</button>
               </div>
             </div>
           ))}
         </div>
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="pagination">
-            <button className="page-btn" disabled={currentPage === 1} onClick={() => goToPage(1)}>First</button>
-            <button className="page-btn" disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}>Prev</button>
-            <div className="page-numbers">
+          <div className="mt-6 flex items-center justify-center gap-2">
+            <button className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50" disabled={currentPage === 1} onClick={() => goToPage(1)}>First</button>
+            <button className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50" disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}>Prev</button>
+            <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }).slice(Math.max(0, currentPage - 2), Math.min(totalPages, currentPage + 1)).map((_, idx) => {
                 const pageNumber = Math.max(1, currentPage - 1) + idx;
                 if (pageNumber > totalPages) return null;
                 return (
                   <button
                     key={pageNumber}
-                    className={`page-number ${currentPage === pageNumber ? 'active' : ''}`}
+                    className={`rounded-md border px-3 py-1.5 text-sm ${currentPage === pageNumber ? 'border-emerald-600 text-emerald-700' : 'border-gray-300 hover:bg-gray-50'}`}
                     onClick={() => goToPage(pageNumber)}
                   >
                     {pageNumber}
@@ -1230,31 +1210,26 @@ const Shop = ({ bestSellers, onQuickView, onProductView, onSearch }) => {
                 );
               })}
             </div>
-            <button className="page-btn" disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)}>Next</button>
-            <button className="page-btn" disabled={currentPage === totalPages} onClick={() => goToPage(totalPages)}>Last</button>
+            <button className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50" disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)}>Next</button>
+            <button className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50" disabled={currentPage === totalPages} onClick={() => goToPage(totalPages)}>Last</button>
           </div>
         )}
           </div>
         </div>
 
         {filteredProducts.length === 0 && (
-          <div className="no-products">
-            <div className="no-products-icon">🔍</div>
-            <h3>No products found</h3>
-            <p>Try adjusting your filters or search terms</p>
-            <button 
-              className="reset-filters-btn"
-              onClick={resetFilters}
-            >
-              Reset All Filters
-            </button>
+          <div className="my-10 text-center">
+            <div className="mb-2 text-3xl">🔍</div>
+            <h3 className="text-lg font-semibold text-gray-900">No products found</h3>
+            <p className="text-gray-600">Try adjusting your filters or search terms</p>
+            <button className="mt-3 inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50" onClick={resetFilters}>Reset All Filters</button>
           </div>
         )}
 
         {/* Cart Notification */}
         {cartNotification.show && (
-          <div className="cart-notification">
-            <div className="notification-content">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+            <div className="rounded-md bg-emerald-600 text-white px-4 py-2 shadow">
               <span>✅ {cartNotification.productName} added to cart!</span>
             </div>
           </div>

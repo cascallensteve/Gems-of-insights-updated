@@ -8,6 +8,7 @@ import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import AppointmentModal from './components/AppointmentModal';
 import AdminLayout from './components/admin/AdminLayout';
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 import Hero from './components/Hero';
 // SearchBar component removed from home page
 import FeatureBenefits from './components/FeatureBenefits';
@@ -16,6 +17,7 @@ import NewArrivals from './components/NewArrivals';
 import PromotionalBanners from './components/PromotionalBanners';
 import BestSellers from './components/BestSellers';
 import BlackFridayBanner from './components/BlackFridayBanner';
+import BlackFridayPage from './components/BlackFridayPage';
 import DealOfTheWeek from './components/DealOfTheWeek';
 import BlogSection from './components/BlogSection';
 
@@ -45,6 +47,7 @@ import ResetPasswordPage from './components/ResetPasswordPage';
 import AboutPage from './components/AboutPage';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminSignup from './components/admin/AdminSignup';
+import AdminLogout from './components/admin/AdminLogout';
 import LocationPage from './components/LocationPage';
 import PrivacyPolicyPage from './components/PrivacyPolicyPage';
 import TermsOfServicePage from './components/TermsOfServicePage';
@@ -128,6 +131,7 @@ function AppContent() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/logout" element={<AdminLogout />} />
           <Route path="/admin/signup" element={<AdminSignup />} />
 
           {/* User Pages */}
@@ -137,6 +141,7 @@ function AppContent() {
           <Route path="/consultation" element={<ConsultationPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/shop" element={<Shop />} />
+          <Route path="/black-friday" element={<BlackFridayPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/product/:id" element={<ProductViewPage />} />
           <Route path="/quickview/:id" element={<QuickView />} />
@@ -155,7 +160,7 @@ function AppContent() {
         <Route path="/returns" element={<ReturnsPage />} />
         <Route path="/track" element={<TrackOrderPage />} />
         <Route path="/support" element={<CustomerSupportPage />} />
-          <Route path="/admin" element={<AdminLayout />} />
+          <Route path="/admin" element={<AdminProtectedRoute />} />
           <Route path="/blog/:postId" element={<BlogPostView />} />
         </Routes>
 

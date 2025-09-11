@@ -27,6 +27,9 @@ const AdminBlogManager = ({ user, onNavigateBack }) => {
     photo: ''
   });
 
+  // TinyMCE loading state
+  const [tinymceLoaded, setTinymceLoaded] = useState(false);
+
   useEffect(() => {
     fetchPosts();
     // Ensure DOM is ready for portals
@@ -36,6 +39,101 @@ const AdminBlogManager = ({ user, onNavigateBack }) => {
       setPortalTarget(target && target.nodeType === 1 ? target : null);
     }
   }, []);
+
+  // Load TinyMCE from CDN once
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.tinymce && !tinymceLoaded) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js';
+      script.referrerPolicy = 'origin';
+      script.onload = () => setTinymceLoaded(true);
+      document.body.appendChild(script);
+    } else if (window.tinymce) {
+      setTinymceLoaded(true);
+    }
+  }, [tinymceLoaded]);
+
+  // Initialize TinyMCE when modal opens (for Title, Description, Body)
+  useEffect(() => {
+    const initEditor = () => {
+      if (!window.tinymce) return;
+      // Destroy existing instances to avoid duplicates
+      window.tinymce.remove('#blog-title-editor,#blog-description-editor,#blog-body-editor');
+      // Title editor (compact toolbar)
+      window.tinymce.init({
+        selector: '#blog-title-editor',
+        menubar: false,
+        toolbar: 'undo redo | bold italic underline | forecolor backcolor | alignleft aligncenter alignright | removeformat',
+        height: 80,
+        branding: false,
+        inline: false,
+        statusbar: false,
+        content_style: 'body { font-family: Inter, Arial, sans-serif; font-size:20px; font-weight:800; color:#111827 }',
+        setup: (editor) => {
+          editor.on('init', () => {
+            editor.setContent(postForm.title || '');
+          });
+          editor.on('change keyup undo redo SetContent', () => {
+            const value = editor.getContent({ format: 'html' });
+            setPostForm(prev => ({ ...prev, title: value }));
+          });
+        }
+      });
+
+      // Description editor (medium toolbar)
+      window.tinymce.init({
+        selector: '#blog-description-editor',
+        menubar: false,
+        plugins: 'link lists emoticons',
+        toolbar: 'undo redo | bold italic underline | forecolor backcolor | bullist numlist | link emoticons | removeformat',
+        height: 140,
+        branding: false,
+        statusbar: false,
+        content_style: 'body { font-family: Inter, Arial, sans-serif; font-size:14px; color:#374151 }',
+        setup: (editor) => {
+          editor.on('init', () => {
+            editor.setContent(postForm.description || '');
+          });
+          editor.on('change keyup undo redo SetContent', () => {
+            const value = editor.getContent({ format: 'html' });
+            setPostForm(prev => ({ ...prev, description: value }));
+          });
+        }
+      });
+
+      // Body editor (full toolbar)
+      window.tinymce.init({
+        selector: '#blog-body-editor',
+        menubar: true,
+        plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount autoresize codesample emoticons hr paste directionality',
+        toolbar: 'undo redo | blocks | bold italic underline forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media codesample | removeformat | fullscreen | help',
+        height: 420,
+        branding: false,
+        convert_urls: false,
+        autoresize_bottom_margin: 16,
+        content_style: 'body { font-family: Inter, Arial, sans-serif; font-size:14px }',
+        setup: (editor) => {
+          editor.on('init', () => {
+            editor.setContent(postForm.body || '');
+          });
+          editor.on('change keyup undo redo SetContent', () => {
+            const value = editor.getContent();
+            setPostForm(prev => ({ ...prev, body: value }));
+          });
+        }
+      });
+    };
+
+    if (showPostModal && tinymceLoaded) {
+      initEditor();
+    }
+    // Clean up on close
+    return () => {
+      if (window.tinymce) {
+        window.tinymce.remove('#blog-body-editor');
+      }
+    };
+  }, [showPostModal, tinymceLoaded, editingPost]);
 
   const fetchPosts = async () => {
     try {
@@ -318,8 +416,9 @@ const AdminBlogManager = ({ user, onNavigateBack }) => {
             <form onSubmit={handlePostSubmit} className="post-form">
               <div className="form-group">
                 <label>Title *</label>
-                <input
-                  type="text"
+                {/* TinyMCE enhanced title input */}
+                <textarea
+                  id="blog-title-editor"
                   name="title"
                   value={postForm.title}
                   onChange={handleInputChange}
@@ -331,12 +430,14 @@ const AdminBlogManager = ({ user, onNavigateBack }) => {
 
               <div className="form-group">
                 <label>Description *</label>
+                {/* TinyMCE enhanced description */}
                 <textarea
+                  id="blog-description-editor"
                   name="description"
                   value={postForm.description}
                   onChange={handleInputChange}
                   placeholder="Brief description of the post"
-                  rows="3"
+                  rows="4"
                   required
                   disabled={submitting}
                 />
@@ -344,15 +445,18 @@ const AdminBlogManager = ({ user, onNavigateBack }) => {
 
               <div className="form-group">
                 <label>Content *</label>
+                {/* TinyMCE will enhance this textarea */}
                 <textarea
+                  id="blog-body-editor"
                   name="body"
                   value={postForm.body}
                   onChange={handleInputChange}
                   placeholder="Write your blog post content here..."
-                  rows="10"
+                  rows="12"
                   required
                   disabled={submitting}
                 />
+                <small>Rich text editor powered by TinyMCE (supports colors, images, media).</small>
               </div>
 
               <div className="form-row">
@@ -628,6 +732,7 @@ const AdminBlogManager = ({ user, onNavigateBack }) => {
                   )}
                 </div>
               </div>
+
 
               <div className="post-body">
                 <h4>Description:</h4>

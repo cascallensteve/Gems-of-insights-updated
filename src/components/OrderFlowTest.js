@@ -73,9 +73,9 @@ const OrderFlowTest = () => {
         total: testOrderData.total
       };
 
-      const receiptSuccess = receiptService.downloadReceiptPDF(testOrder);
+      const receiptSuccess = receiptService.printReceipt(testOrder);
       addResult('Receipt Generation', receiptSuccess ? 'success' : 'error', 
-        receiptSuccess ? 'Receipt generated successfully' : 'Failed to generate receipt');
+        receiptSuccess ? 'Receipt opened for printing' : 'Failed to open printable receipt');
 
       // Test 4: API Format Validation
       addResult('API Format Validation', 'running', 'Validating API request format...');
@@ -203,5 +203,7 @@ const OrderFlowTest = () => {
 };
 
 export default OrderFlowTest;
+
+
 
 

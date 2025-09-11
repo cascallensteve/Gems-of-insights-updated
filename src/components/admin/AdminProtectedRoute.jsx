@@ -1,9 +1,10 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout from './AdminLayout';
 
 const AdminProtectedRoute = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, isLoading } = useAuth();
 
   // Check if user is logged in and is an admin
   const isAuthenticated = !!currentUser;
@@ -32,14 +33,27 @@ const AdminProtectedRoute = () => {
   });
 
 
-  // If user is authenticated, allow access (we'll determine admin status in the layout)
-  if (isAuthenticated) {
+  // While auth is loading, avoid redirect loops
+  if (isLoading) {
+    return (
+      <div className="grid min-h-[60vh] place-items-center p-6">
+        <div className="text-center text-sm text-gray-700">Checking admin session…</div>
+      </div>
+    );
+  }
+
+  // If user is authenticated and is an admin, allow access
+  if (isAuthenticated && isAdmin) {
     return <AdminLayout />;
   }
 
-  // Only redirect to login if no user is authenticated at all
-  window.location.href = '/admin/login';
-  return null;
+  // Authenticated but NOT an admin → send to client home
+  if (isAuthenticated && !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Not authenticated → go to admin login
+  return <Navigate to="/admin/login" replace />;
 };
 
 export default AdminProtectedRoute;

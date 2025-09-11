@@ -5,13 +5,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import LazyLoad from 'react-lazyload';
-import './BestSellers.css';
+import { HiEye, HiPlus } from 'react-icons/hi2';
+import QuickViewModal from './QuickViewModal';
 
 const BestSellers = ({ onQuickView, onProductView }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { addToCart } = useCart();
   const [cartNotification, setCartNotification] = useState({ show: false, productName: '' });
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [showQuickView, setShowQuickView] = useState(false);
 
   const [ref, inView] = useInView({
     threshold: 0.1,
@@ -101,13 +104,6 @@ const BestSellers = ({ onQuickView, onProductView }) => {
   };
 
   const handleAddToCart = (product) => {
-    if (!currentUser) {
-      if (window.confirm('Please login to add items to cart. Would you like to login now?')) {
-        navigate('/login');
-      }
-      return;
-    }
-
     const cartItem = {
       id: product.id,
       name: product.name,
@@ -131,12 +127,8 @@ const BestSellers = ({ onQuickView, onProductView }) => {
   };
 
   const handleQuickView = (product) => {
-    if (onQuickView) {
-      onQuickView(product);
-    } else {
-      // Fallback: navigate to product page
-      navigate(`/product/${product.id}`);
-    }
+    setQuickViewProduct(product);
+    setShowQuickView(true);
   };
 
   const handleProductView = (product) => {
@@ -151,75 +143,78 @@ const BestSellers = ({ onQuickView, onProductView }) => {
   return (
     <motion.section 
       ref={ref}
-      className="best-sellers"
+      className="py-12 bg-white"
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       variants={containerVariants}
     >
-      <div className="section-header">
-        <h2 className="section-title">Best Sellers</h2>
-        <p className="section-subtitle">Our most popular natural wellness products</p>
-      </div>
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Best Sellers</h2>
+          <p className="text-gray-600 mt-1">Our most popular natural wellness products</p>
+        </div>
 
-      <div className="products-grid">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {products.map((product) => (
           <motion.div 
             key={product.id} 
-            className="best-seller-product-card"
+            className="group rounded-md border border-gray-100 shadow-sm overflow-hidden bg-white"
             variants={itemVariants}
           >
-            {product.sale && <span className="sale-badge">Sale!</span>}
+            {product.sale && <span className="absolute m-2 inline-flex items-center justify-center rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white">Sale!</span>}
             
-            <div className="product-image">
-              <LazyLoad height={200} offset={100} placeholder={<div className="image-placeholder">Loading...</div>}>
-                <img src={product.image} alt={product.name} />
+            <div className="relative">
+              <LazyLoad height={180} offset={100} placeholder={<div className="h-44 bg-gray-100"/>}>
+                <img src={product.image} alt={product.name} className="h-44 w-full object-cover" />
               </LazyLoad>
-              <div className="product-overlay">
-                <button 
-                  className="quick-view-btn"
-                  onClick={() => handleQuickView(product)}
-                >
-                  Quick View
-                </button>
-                <button 
-                  className="full-view-btn"
-                  onClick={() => handleProductView(product)}
-                >
-                  Full Details
-                </button>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition"/>
+              <div className="absolute bottom-2 right-2 flex gap-2">
+                <button className="inline-flex items-center justify-center rounded-full bg-white/90 text-gray-800 w-8 h-8 shadow hover:bg-white" onClick={() => handleQuickView(product)} title="Quick view"><HiEye /></button>
+                <button className="inline-flex items-center justify-center rounded-full bg-emerald-600 text-white w-9 h-9 shadow hover:bg-emerald-700" onClick={() => handleAddToCart(product)} title="Add to cart"><HiPlus /></button>
               </div>
             </div>
 
-            <div className="product-details">
-              <div className="product-category-badge">{product.category}</div>
-              <h3 className="product-name">{product.name}</h3>
+            <div className="p-3">
+              <div className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">{product.category}</div>
+              <h3 className="mt-2 line-clamp-2 font-semibold text-sm text-gray-900 group-hover:text-emerald-700">{product.name}</h3>
 
-              <div className="product-price">
+              <div className="mt-1 flex items-center gap-2">
                 {product.originalPrice && (
-                  <span className="original-price">KSH {product.originalPrice}</span>
+                  <span className="text-xs text-gray-400 line-through">KSH {product.originalPrice}</span>
                 )}
-                <span className="current-price">KSH {product.price}</span>
+                <span className="text-base font-semibold text-gray-900">KSH {product.price}</span>
               </div>
 
-              <button 
-                className="add-to-cart-btn"
-                onClick={() => handleAddToCart(product)}
-              >
-                Add to Cart
-              </button>
+              <div className="mt-2 flex items-center gap-2">
+                <button className="inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-3 py-1.5 text-sm font-medium shadow hover:bg-emerald-600" onClick={() => handleProductView(product)}>Full Details</button>
+                <button className="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" onClick={() => handleQuickView(product)}>Quick View</button>
+              </div>
             </div>
           </motion.div>
         ))}
       </div>
-
-      {/* Cart Notification */}
       {cartNotification.show && (
-        <div className="cart-notification">
-          <div className="notification-content">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="rounded-md bg-emerald-600 text-white px-4 py-2 shadow">
             <span>✅ {cartNotification.productName} added to cart!</span>
           </div>
         </div>
       )}
+      </div>
+      {/* Quick View Modal */}
+      <QuickViewModal
+        product={quickViewProduct}
+        isOpen={showQuickView}
+        onClose={() => {
+          setShowQuickView(false);
+          setQuickViewProduct(null);
+        }}
+        onViewFullDetails={(product) => {
+          setShowQuickView(false);
+          setQuickViewProduct(null);
+          handleProductView(product);
+        }}
+      />
     </motion.section>
   );
 };

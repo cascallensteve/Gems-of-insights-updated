@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import LazyLoad from 'react-lazyload';
-import './DealOfTheWeek.css';
 
 const DealOfTheWeek = () => {
   const navigate = useNavigate();
@@ -64,13 +63,6 @@ const DealOfTheWeek = () => {
   }, []);
 
   const handleAddToCart = () => {
-    if (!currentUser) {
-      if (window.confirm('Please login to add items to cart. Would you like to login now?')) {
-        navigate('/login');
-      }
-      return;
-    }
-
     const cartItem = {
       id: weeklyClass.id,
       name: weeklyClass.name,
@@ -105,45 +97,43 @@ const DealOfTheWeek = () => {
   return (
     <motion.section 
       ref={ref}
-      className="deal-of-the-week"
+      className="py-12 bg-white"
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       variants={containerVariants}
     >
-      <div className="container">
-        <motion.div className="section-header" variants={itemVariants}>
-          <h2>Natural Remedies Classes</h2>
-          <p>Learn natural healing methods</p>
+      <div className="max-w-7xl mx-auto px-4">
+        <motion.div className="text-center mb-8" variants={itemVariants}>
+          <h2 className="text-2xl font-bold text-gray-900">Natural Remedies Classes</h2>
+          <p className="text-gray-600 mt-1">Learn natural healing methods</p>
         </motion.div>
 
-        <motion.div className="deal-card" variants={itemVariants}>
-          <div className="deal-image">
-            <LazyLoad height={400} offset={100} placeholder={<div className="deal-image-placeholder">Loading class image...</div>}>
-              <img src={weeklyClass.image} alt={weeklyClass.name} />
+        <motion.div className="grid gap-6 md:grid-cols-2 items-stretch" variants={itemVariants}>
+          <div className="relative overflow-hidden rounded-xl shadow">
+            <LazyLoad height={400} offset={100} placeholder={<div className="h-64 bg-gray-100"/>}>
+              <img src={weeklyClass.image} alt={weeklyClass.name} className="h-full w-full object-cover" />
             </LazyLoad>
-            <div className="savings-badge">
+            <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-emerald-600 px-3 py-1 text-white text-xs font-semibold">
               Save {weeklyClass.savings}
             </div>
           </div>
 
-          <div className="deal-content">
-            <div className="deal-header">
-              <h3>{weeklyClass.name}</h3>
-              <div className="deal-rating">
-                <div className="stars">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="star filled">★</span>
-                  ))}
-                </div>
-                <span className="rating-text">({weeklyClass.reviews} reviews)</span>
+          <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-lg font-semibold text-gray-900">{weeklyClass.name}</h3>
+              <div className="flex items-center gap-1 text-amber-500 text-sm">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i}>★</span>
+                ))}
+                <span className="ml-2 text-gray-600 text-xs">({weeklyClass.reviews} reviews)</span>
               </div>
             </div>
 
-            <p className="deal-description">{weeklyClass.description}</p>
+            <p className="mt-2 text-sm text-gray-700">{weeklyClass.description}</p>
 
-            <div className="deal-features">
+            <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
               {weeklyClass.features.map((feature, index) => (
-                <div key={index} className="feature-item">
+                <div key={index} className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-2 py-1">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -152,36 +142,36 @@ const DealOfTheWeek = () => {
               ))}
             </div>
 
-            <div className="deal-pricing">
-              <span className="current-price">{weeklyClass.price}</span>
-              <span className="original-price">{weeklyClass.originalPrice}</span>
+            <div className="mt-4 flex items-end gap-3">
+              <span className="text-xl font-semibold text-gray-900">{weeklyClass.price}</span>
+              <span className="text-sm text-gray-400 line-through">{weeklyClass.originalPrice}</span>
             </div>
 
-            <div className="countdown-timer">
-              <h4>Offer ends in:</h4>
-              <div className="timer-grid">
-                <div className="timer-item">
-                  <span className="timer-number">{timeLeft.days}</span>
-                  <span className="timer-label">Days</span>
+            <div className="mt-4">
+              <h4 className="text-sm font-semibold text-gray-900">Offer ends in:</h4>
+              <div className="mt-2 grid grid-cols-4 gap-2">
+                <div className="rounded-md border border-gray-200 p-2 text-center">
+                  <div className="text-lg font-semibold text-gray-900">{timeLeft.days}</div>
+                  <div className="text-xs text-gray-600">Days</div>
                 </div>
-                <div className="timer-item">
-                  <span className="timer-number">{timeLeft.hours}</span>
-                  <span className="timer-label">Hours</span>
+                <div className="rounded-md border border-gray-200 p-2 text-center">
+                  <div className="text-lg font-semibold text-gray-900">{timeLeft.hours}</div>
+                  <div className="text-xs text-gray-600">Hours</div>
                 </div>
-                <div className="timer-item">
-                  <span className="timer-number">{timeLeft.minutes}</span>
-                  <span className="timer-label">Minutes</span>
+                <div className="rounded-md border border-gray-200 p-2 text-center">
+                  <div className="text-lg font-semibold text-gray-900">{timeLeft.minutes}</div>
+                  <div className="text-xs text-gray-600">Minutes</div>
                 </div>
-                <div className="timer-item">
-                  <span className="timer-number">{timeLeft.seconds}</span>
-                  <span className="timer-label">Seconds</span>
+                <div className="rounded-md border border-gray-200 p-2 text-center">
+                  <div className="text-lg font-semibold text-gray-900">{timeLeft.seconds}</div>
+                  <div className="text-xs text-gray-600">Seconds</div>
                 </div>
               </div>
             </div>
 
             <button 
-              className="deal-btn"
-              onClick={handleAddToCart}
+              className="mt-5 inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-5 py-2.5 text-sm font-semibold shadow hover:bg-emerald-600"
+              onClick={() => navigate('/courses?enroll=1')}
             >
               Enroll Now
             </button>

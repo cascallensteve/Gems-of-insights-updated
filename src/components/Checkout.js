@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import './Checkout.css';
 
 const Checkout = ({ cartItems, onClose, onOrderComplete }) => {
+  const { currentUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [shippingInfo, setShippingInfo] = useState({
     firstName: '',
@@ -40,6 +42,11 @@ const Checkout = ({ cartItems, onClose, onOrderComplete }) => {
   };
 
   const handleNextStep = () => {
+    if (!currentUser) {
+      const next = encodeURIComponent('/checkout');
+      window.location.href = `/login?next=${next}`;
+      return;
+    }
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
@@ -52,6 +59,11 @@ const Checkout = ({ cartItems, onClose, onOrderComplete }) => {
   };
 
   const handlePlaceOrder = async () => {
+    if (!currentUser) {
+      const next = encodeURIComponent('/checkout');
+      window.location.href = `/login?next=${next}`;
+      return;
+    }
     setLoading(true);
     
     try {
@@ -83,6 +95,11 @@ const Checkout = ({ cartItems, onClose, onOrderComplete }) => {
   };
 
   const handleMpesaPayment = async () => {
+    if (!currentUser) {
+      const next = encodeURIComponent('/checkout');
+      window.location.href = `/login?next=${next}`;
+      return;
+    }
     setLoading(true);
     
     try {

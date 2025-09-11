@@ -158,6 +158,23 @@ const apiService = {
       }
     },
 
+    // Change password (logged-in user)
+    changePassword: async (currentPassword, newPassword) => {
+      try {
+        const token = apiService.getAuthToken();
+        if (!token) throw new Error('Authentication token required');
+        const response = await api.post('/change-password', {
+          current_password: currentPassword,
+          new_password: newPassword
+        }, {
+          headers: { 'Authorization': `Token ${token}` }
+        });
+        return response.data;
+      } catch (error) {
+        throw error.response?.data || error.message;
+      }
+    },
+
     // Admin sign up
     adminSignUp: async (adminData) => {
       try {
@@ -382,11 +399,34 @@ const apiService = {
       }
     },
 
-    // Get user orders
+    // Get user orders (tries multiple endpoints and normalizes shape)
     getUserOrders: async () => {
       try {
-        const response = await api.get('/orders/user-orders');
-        return response.data;
+        const token = apiService.getAuthToken();
+        const headers = token ? { 'Authorization': `Token ${token}` } : {};
+        const endpoints = [
+          '/orders/user-orders',
+          '/orders/my-orders',
+          '/store/user-orders',
+          '/store/my-orders',
+          '/store/orders/me'
+        ];
+        let lastError;
+        for (const ep of endpoints) {
+          try {
+            const res = await api.get(ep, { headers });
+            const data = res.data;
+            // Normalize to array
+            const list = Array.isArray(data)
+              ? data
+              : (data?.orders || data?.results || data?.data || []);
+            return list;
+          } catch (e) {
+            lastError = e;
+            continue;
+          }
+        }
+        throw lastError || new Error('Failed to fetch user orders');
       } catch (error) {
         throw error.response?.data || error.message;
       }

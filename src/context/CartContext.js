@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { cartAPI } from '../services/cartAPI';
+// Using local state/localStorage only for cart operations; no remote API calls
 
 const CartContext = createContext();
 
@@ -83,39 +83,12 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: 'ADD_TO_CART', payload: product });
   };
 
-  const removeFromCart = async (productId) => {
-    try {
-      // Call API to remove item from cart
-      const response = await cartAPI.removeFromCart(productId);
-      console.log('Item removed from cart:', response);
-      
-      // Update local state after successful API call
-      dispatch({ type: 'REMOVE_FROM_CART', payload: { id: productId } });
-      
-      // Show success message using alert for now (can be upgraded to toast later)
-      if (response.message) {
-        alert(response.message);
-      } else {
-        alert('Item removed from cart successfully!');
-      }
-      
-      return response;
-    } catch (error) {
-      console.error('Error removing item from cart:', error);
-      
-      // Check if it's an auth error
-      if (error.message && error.message.includes('Authentication credentials were not provided')) {
-        alert('Authentication required. Please log in first.\n\nDebugging info:\n' + error.message);
-      } else if (error.message && error.message.includes('403')) {
-        alert('Access denied. Please check your login status.\n\nDebugging info:\n' + error.message);
-      } else {
-        alert('Failed to remove item from cart. Please try again.\n\nError: ' + (error.message || 'Unknown error'));
-      }
-      
-      // Don't remove from local state if API fails due to auth
-      // dispatch({ type: 'REMOVE_FROM_CART', payload: { id: productId } });
-      throw error;
-    }
+  const removeFromCart = (productId) => {
+    // Optimistically remove from local state and persist to localStorage
+    dispatch({ type: 'REMOVE_FROM_CART', payload: { id: productId } });
+    // Optionally, show a lightweight confirmation (can be replaced by toast)
+    // console.info('Removed item from cart:', productId);
+    return { success: true };
   };
 
   const updateQuantity = (productId, quantity) => {

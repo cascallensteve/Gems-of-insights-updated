@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { blogService } from '../services/blogService';
 import LoadingDots from './LoadingDots';
 import LikeButton from './LikeButton';
-import './BlogPage.css';
+// Tailwind conversion: removed external CSS import
 
 const BlogPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -267,26 +267,26 @@ const BlogPage = () => {
 
   // Enhanced loading component
   const LoadingSpinner = () => (
-    <div className="blog-loading">
+    <div className="py-6 text-center">
       <LoadingDots text="Loading blog posts..." size="large" />
     </div>
   );
 
   // Enhanced error component
   const ErrorMessage = () => (
-    <div className="error-message">
+    <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
       <p>Error loading blogs: {error}</p>
-      <button onClick={() => window.location.reload()} className="retry-btn">Try Again</button>
+      <button onClick={() => window.location.reload()} className="mt-2 inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50">Try Again</button>
     </div>
   );
 
   return (
-    <div className="blog-page">
-      <div className="container">
+    <div className="mt-[64px] md:mt-[72px]">
+      <div className="mx-auto max-w-6xl px-4">
         {/* Header */}
-        <div className="blog-header">
-          <h1 className="blog-title">Health & Wellness Blog</h1>
-          <p className="blog-subtitle">Latest updates on health, wellness, and new product arrivals</p>
+        <div className="py-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Health & Wellness Blog</h1>
+          <p className="mt-1 text-gray-700">Latest updates on health, wellness, and new product arrivals</p>
           
           {/* Show loading spinner */}
           {loading && <LoadingSpinner />}
@@ -297,23 +297,23 @@ const BlogPage = () => {
 
         {/* Search and Filter - Only show when not loading and no error */}
         {!loading && !error && (
-          <div className="blog-filters">
-            <div className="search-box">
+          <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="relative w-full md:max-w-sm">
               <input
                 type="text"
                 placeholder="Search articles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
+                className="w-full rounded-md border border-gray-300 pl-10 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200"
               />
-              <span className="search-icon">🔍</span>
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">🔍</span>
             </div>
             
-            <div className="category-filters">
+            <div className="flex flex-wrap gap-2">
               {categories.map(category => (
                 <button
                   key={category.id}
-                  className={`category-btn ${selectedCategory === category.id ? 'active' : ''}`}
+                  className={`rounded-full border px-3 py-1.5 text-sm ${selectedCategory === category.id ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}
                   onClick={() => setSelectedCategory(category.id)}
                 >
                   {category.name} ({category.count})
@@ -325,33 +325,35 @@ const BlogPage = () => {
 
         {/* Featured Post - Only show when not loading and no error */}
         {!loading && !error && filteredPosts.length > 0 && (
-          <div className="featured-post">
-            <div className="featured-image">
-              <img src={filteredPosts[0].image} alt={filteredPosts[0].title} />
-              <div className="category-tag featured-tag">
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            <div className="relative overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-sm">
+              <img className="h-56 w-full object-cover" src={filteredPosts[0].image} alt={filteredPosts[0].title} />
+              <div className="absolute left-3 top-3 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
                 {getCategoryFromTags(filteredPosts[0].tags)}
               </div>
             </div>
-            <div className="featured-content">
-              <h2 className="featured-title">{filteredPosts[0].title}</h2>
-              <p className="featured-excerpt">{filteredPosts[0].excerpt}</p>
-              <div className="post-meta">
-                <span className="author">By {filteredPosts[0].author}</span>
-                <span className="date">{formatDate(filteredPosts[0].date)}</span>
-                <span className="read-time">{filteredPosts[0].readTime}</span>
+            <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-semibold text-gray-900">{filteredPosts[0].title}</h2>
+              <p className="mt-2 text-gray-700">{filteredPosts[0].excerpt}</p>
+              <div className="mt-2 flex flex-wrap gap-3 text-sm text-gray-600">
+                <span>By {filteredPosts[0].author}</span>
+                <span>•</span>
+                <span>{formatDate(filteredPosts[0].date)}</span>
+                <span>•</span>
+                <span>{filteredPosts[0].readTime}</span>
               </div>
-              <div className="post-tags">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {filteredPosts[0].tags.slice(0, 5).map((tag, index) => (
-                  <span key={index} className="tag">{tag}</span>
+                  <span key={index} className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800">{tag}</span>
                 ))}
               </div>
-              <div className="post-content-preview">
-                <h4>Preview:</h4>
-                <p>{filteredPosts[0].body ? filteredPosts[0].body.substring(0, 200) + '...' : 'Content preview not available'}</p>
+              <div className="mt-3">
+                <h4 className="text-sm font-semibold text-gray-900">Preview:</h4>
+                <p className="text-gray-700">{filteredPosts[0].body ? filteredPosts[0].body.substring(0, 200) + '...' : 'Content preview not available'}</p>
               </div>
-              <div className="featured-actions">
+              <div className="mt-4 flex items-center gap-3">
                 <button 
-                  className="read-more-btn"
+                  className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"
                   onClick={() => handleReadFullPost(filteredPosts[0])}
                 >
                   Read Full Article
@@ -364,9 +366,13 @@ const BlogPage = () => {
                 />
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Featured Post Comments Section */}
-            <div className="featured-comments-section">
+        {/* Featured Post Comments Section */}
+        {!loading && !error && filteredPosts.length > 0 && (
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
               <h4 className="comments-title">Comments ({comments[filteredPosts[0].id]?.length || 0})</h4>
               
               {/* Add Comment Form */}
@@ -423,36 +429,37 @@ const BlogPage = () => {
 
         {/* Blog Grid - Only show when not loading and no error */}
         {!loading && !error && (
-          <div className="blog-grid">
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredPosts.slice(1).map(post => (
-            <article key={post.id} className="blog-card">
-              <div className="blog-image">
-                <img src={post.image} alt={post.title} />
-                <div className="category-tag">
+            <article key={post.id} className="overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-sm">
+              <div className="relative">
+                <img className="h-44 w-full object-cover" src={post.image} alt={post.title} />
+                <div className="absolute left-3 top-3 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
                   {getCategoryFromTags(post.tags)}
                 </div>
               </div>
-              <div className="blog-content">
-                <h3 className="blog-card-title">{post.title}</h3>
-                <p className="blog-excerpt">{post.excerpt}</p>
-                <div className="post-meta">
-                  <span className="author">By {post.author}</span>
-                  <span className="date">{formatDate(post.date)}</span>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold text-gray-900">{post.title}</h3>
+                <p className="mt-1 text-gray-700">{post.excerpt}</p>
+                <div className="mt-2 flex flex-wrap gap-3 text-sm text-gray-600">
+                  <span>By {post.author}</span>
+                  <span>•</span>
+                  <span>{formatDate(post.date)}</span>
                 </div>
-                <div className="blog-footer">
-                  <div className="post-tags">
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="flex flex-wrap gap-2">
                     {post.tags.slice(0, 3).map((tag, index) => (
-                      <span key={index} className="tag">{tag}</span>
+                      <span key={index} className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800">{tag}</span>
                     ))}
                   </div>
-                  <span className="read-time">{post.readTime}</span>
+                  <span className="text-sm text-gray-600">{post.readTime}</span>
                 </div>
-                <div className="content-preview">
+                <div className="mt-2 text-gray-700">
                   <p>{post.body ? post.body.substring(0, 150) + '...' : 'Preview not available'}</p>
                 </div>
-                <div className="blog-actions">
+                <div className="mt-4 flex items-center justify-between">
                   <button 
-                    className="read-more-btn"
+                    className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-600"
                     onClick={() => handleReadFullPost(post)}
                   >
                     Read More
@@ -525,21 +532,23 @@ const BlogPage = () => {
         )}
 
         {/* Newsletter Signup */}
-        <div className="newsletter-section">
-          <div className="newsletter-content">
-            <h3>Stay Updated</h3>
-            <p>Get the latest health tips and product updates delivered to your inbox</p>
-            <div className="newsletter-form">
-              <input type="email" placeholder="Enter your email address" />
-              <button type="submit">Subscribe</button>
+        <div className="mt-12 rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Stay Updated</h3>
+              <p className="text-gray-700">Get the latest health tips and product updates delivered to your inbox</p>
+            </div>
+            <div className="flex w-full gap-2 sm:w-auto">
+              <input className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200" type="email" placeholder="Enter your email address" />
+              <button className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600" type="submit">Subscribe</button>
             </div>
           </div>
         </div>
 
         {/* No Results - Only show when not loading and no error */}
         {!loading && !error && filteredPosts.length === 0 && (
-          <div className="no-results">
-            <h3>No articles found</h3>
+          <div className="mt-10 rounded-lg border border-emerald-100 bg-white p-6 text-center text-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900">No articles found</h3>
             <p>Try adjusting your search or filter criteria</p>
           </div>
         )}

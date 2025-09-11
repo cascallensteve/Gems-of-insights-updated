@@ -3,6 +3,7 @@ import { FaTrash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import apiService, { getUserOrders, createOrder, initiateMpesaPayment } from '../services/api';
 import receiptService from '../services/receiptService';
+import pdfService from '../services/pdfService';
 import LoadingDots from './LoadingDots';
 import './OrdersPage.css';
 
@@ -211,13 +212,22 @@ const OrdersPage = () => {
     alert(`Adding ${order.items.length} items from order ${order.id} to your cart`);
   };
 
-  // Download receipt PDF
-  const downloadReceipt = (order) => {
+  // Download receipt (paid) or cart (unpaid) as PDF
+  const downloadReceiptOrCart = async (order) => {
     try {
-      receiptService.downloadReceipt(order);
+      const status = (order?.status || '').toLowerCase();
+      const isPaid = ['paid','completed','success','delivered'].includes(status);
+      if (isPaid) {
+        const ok = await receiptService.downloadReceipt(order);
+        if (!ok) throw new Error('Receipt download failed');
+      } else {
+        // for unpaid, export cart details only
+        const ok = await receiptService.downloadCartDetailsPDF(order);
+        if (!ok) throw new Error('Cart PDF generation failed');
+      }
     } catch (error) {
-      console.error('Error downloading receipt:', error);
-      alert('Error downloading receipt. Please try again.');
+      console.error('Error downloading file:', error);
+      alert('Download failed. Please try again.');
     }
   };
 
@@ -284,34 +294,36 @@ const OrdersPage = () => {
   };
 
   return (
-    <div className="orders-page">
-      <div className="orders-container">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
-        <div className="orders-header">
-          <div className="header-left">
-            <button className="back-btn" onClick={() => window.history.back()}>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+          <div>
+            <button className="inline-flex items-center text-sm text-emerald-700 hover:text-emerald-800" onClick={() => window.history.back()}>
               ← Back to Shop
             </button>
-            <h1>My Orders</h1>
-            <p>Track and manage your orders</p>
+            <h1 className="text-2xl font-semibold text-gray-900 mt-1">My Orders</h1>
+            <p className="text-gray-500">Track and manage your orders</p>
           </div>
-          <div className="header-stats">
-            <div className="stat-item">
-              <span className="stat-number">{orderStats.totalOrders}</span>
-              <span className="stat-label">Total Orders</span>
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <div className="text-xl font-bold text-gray-900">{orderStats.totalOrders}</div>
+              <div className="text-sm text-gray-500">Total Orders</div>
             </div>
-            <div className="stat-item">
-              <span className="stat-number">KSH {Number(orderStats.totalSpent).toLocaleString()}</span>
-              <span className="stat-label">Total Spent</span>
+            <div className="hidden sm:block w-px h-10 bg-gray-200" />
+            <div className="text-center">
+              <div className="text-xl font-bold text-gray-900">KSH {Number(orderStats.totalSpent).toLocaleString()}</div>
+              <div className="text-sm text-gray-500">Total Spent</div>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="orders-filters">
-          <div className="filter-group">
-            <label>Filter by Status:</label>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Filter by Status</label>
             <select 
+              className="w-full rounded-md border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm"
               value={filterStatus} 
               onChange={(e) => setFilterStatus(e.target.value)}
               disabled={isLoading}
@@ -323,9 +335,10 @@ const OrdersPage = () => {
               <option value="cancelled">Cancelled ({orderStats.cancelled})</option>
             </select>
           </div>
-          <div className="filter-group">
-            <label>Sort by:</label>
+          <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Sort by</label>
             <select 
+              className="w-full rounded-md border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm"
               value={sortBy} 
               onChange={(e) => setSortBy(e.target.value)}
               disabled={isLoading}
@@ -336,9 +349,10 @@ const OrdersPage = () => {
               <option value="amount-low">Lowest Amount</option>
             </select>
           </div>
-          <div className="filter-group">
-            <label>Search:</label>
+          <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Search</label>
             <input
+              className="w-full rounded-md border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm"
               type="text"
               placeholder="Search by order ID..."
               value={searchQuery}
@@ -350,20 +364,20 @@ const OrdersPage = () => {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="loading-state">
+          <div className="flex items-center justify-center py-16">
             <LoadingDots text="Loading your orders..." size="large" />
           </div>
         )}
 
         {/* Orders List */}
         {!isLoading && (
-          <div className="orders-content">
-            <div className="orders-list">
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-4">
               {sortedOrders.length === 0 ? (
-                <div className="no-orders">
-                  <div className="no-orders-icon">📦</div>
-                  <h3>No orders found</h3>
-                  <p>
+                <div className="text-center bg-white border border-gray-100 rounded-xl p-10 shadow-sm">
+                  <div className="text-4xl mb-2">📦</div>
+                  <h3 className="text-lg font-semibold text-gray-900">No orders found</h3>
+                  <p className="text-gray-500 mt-1">
                     {searchQuery 
                       ? `No orders match your search for "${searchQuery}"`
                       : filterStatus !== 'all'
@@ -371,7 +385,7 @@ const OrdersPage = () => {
                         : "You haven't placed any orders yet"}
                   </p>
                   <button 
-                    className="shop-now-btn" 
+                    className="mt-4 inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-white text-sm font-medium hover:bg-emerald-700"
                     onClick={() => window.location.href = '/shop'}
                   >
                     Start Shopping
@@ -381,47 +395,48 @@ const OrdersPage = () => {
                 sortedOrders.map(order => (
                   <div 
                     key={order.id} 
-                    className={`order-card ${selectedOrder?.id === order.id ? 'selected' : ''}`}
+                    className={`bg-white border ${selectedOrder?.id === order.id ? 'border-emerald-300 ring-2 ring-emerald-100' : 'border-gray-100'} rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer`}
                     onClick={() => setSelectedOrder(order)}
                   >
-                    <div className="order-header">
-                      <div className="order-info">
-                        <h3>Order #{order.id}</h3>
-                        <p>{formatDate(order.date)}</p>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-base font-semibold text-gray-900">Order #{order.id}</h3>
+                        <p className="text-sm text-gray-500">{formatDate(order.date)}</p>
                       </div>
-                      <div className="order-status">
+                      <div>
                         <span 
-                          className={`status-badge ${order.status}`}
+                          className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-white"
                           style={{ backgroundColor: getStatusColor(order.status) }}
                         >
-                          {getStatusIcon(order.status)} {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          <span className="mr-1">{getStatusIcon(order.status)}</span>
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                         </span>
                       </div>
                     </div>
                     
-                    <div className="order-items">
+                    <div className="mt-3 flex items-center gap-3">
                       {order.items.slice(0, 2).map(item => (
-                        <div key={`${order.id}-${item.id}`} className="order-item">
-                          <img src={item.image} alt={item.name} />
-                          <div className="item-details">
-                            <span className="item-name">{item.name}</span>
-                            <span className="item-quantity">Qty: {item.quantity}</span>
+                        <div key={`${order.id}-${item.id}`} className="flex items-center gap-3 bg-gray-50 rounded-md p-2 border border-gray-100">
+                          <img className="w-12 h-12 rounded object-cover" src={item.image} alt={item.name} />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                            <div className="text-xs text-gray-500">Qty: {item.quantity}</div>
                           </div>
                         </div>
                       ))}
                       {order.items.length > 2 && (
-                        <div className="more-items">+{order.items.length - 2} more items</div>
+                        <div className="text-xs text-gray-500">+{order.items.length - 2} more items</div>
                       )}
                     </div>
 
-                    <div className="order-footer">
-                      <div className="order-total">
-                        <strong>Total: KSH {Number(order.total).toLocaleString()}</strong>
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="text-sm text-gray-700">
+                        <strong className="text-gray-900">Total:</strong> KSH {Number(order.total).toLocaleString()}
                       </div>
-                      <div className="order-actions">
+                      <div className="flex items-center gap-2">
                         {order.status === 'delivered' && (
                           <button 
-                            className="action-btn delete-btn"
+                            className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteOrder(order.id);
@@ -432,7 +447,7 @@ const OrdersPage = () => {
                         )}
                         {(order.status === 'processing' || order.status === 'shipped') && (
                           <button 
-                            className="action-btn cancel-btn"
+                            className="inline-flex items-center rounded-md border border-amber-300 text-amber-700 bg-amber-50 px-3 py-1.5 text-sm hover:bg-amber-100"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCancelOrder(order);
@@ -442,13 +457,19 @@ const OrdersPage = () => {
                           </button>
                         )}
                         <button 
-                          className="action-btn view-btn"
+                          className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedOrder(order);
                           }}
                         >
                           View Details
+                        </button>
+                        <button
+                          className="inline-flex items-center rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
+                          onClick={(e) => { e.stopPropagation(); downloadReceiptOrCart(order); }}
+                        >
+                          {(['paid','completed','success','delivered'].includes((order.status||'').toLowerCase()) ? 'Download Receipt' : 'Download Cart PDF')}
                         </button>
                       </div>
                     </div>
@@ -459,78 +480,68 @@ const OrdersPage = () => {
 
             {/* Order Details Sidebar */}
             {selectedOrder && (
-              <div className="order-details">
-                <div className="details-header">
-                  <h2>Order Details</h2>
+              <div className="lg:col-span-1 bg-white border border-gray-100 rounded-xl shadow-sm p-5 sticky top-6 h-fit">
+                <div className="flex items-start justify-between">
+                  <h2 className="text-lg font-semibold text-gray-900">Order Details</h2>
                   <button 
-                    className="close-details"
+                    className="text-gray-400 hover:text-gray-600"
                     onClick={() => setSelectedOrder(null)}
                   >
                     ×
                   </button>
                 </div>
 
-                <div className="details-content">
-                  <div className="detail-section">
-                    <h3>Order Information</h3>
-                    <div className="detail-row">
-                      <span>Order ID:</span>
-                      <span>{selectedOrder.id}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span>Date:</span>
-                      <span>{formatDate(selectedOrder.date)}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span>Status:</span>
-                      <span 
-                        className={`status-badge ${selectedOrder.status}`}
-                        style={{ backgroundColor: getStatusColor(selectedOrder.status) }}
-                      >
-                        {getStatusIcon(selectedOrder.status)} {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
-                      </span>
-                    </div>
-                    {selectedOrder.trackingNumber && (
-                      <div className="detail-row">
-                        <span>Tracking:</span>
-                        <a 
-                          href={`https://tracking.example.com/?tracking=${selectedOrder.trackingNumber}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="tracking-number"
+                <div className="mt-4 space-y-6">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900">Order Information</h3>
+                    <div className="mt-2 space-y-2 text-sm text-gray-700">
+                      <div className="flex items-center justify-between"><span className="text-gray-500">Order ID:</span><span>{selectedOrder.id}</span></div>
+                      <div className="flex items-center justify-between"><span className="text-gray-500">Date:</span><span>{formatDate(selectedOrder.date)}</span></div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Status:</span>
+                        <span 
+                          className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-white"
+                          style={{ backgroundColor: getStatusColor(selectedOrder.status) }}
                         >
-                          {selectedOrder.trackingNumber}
-                        </a>
+                          <span className="mr-1">{getStatusIcon(selectedOrder.status)}</span>
+                          {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                        </span>
                       </div>
-                    )}
-                    {selectedOrder.cancelReason && (
-                      <div className="detail-row">
-                        <span>Cancel Reason:</span>
-                        <span>{selectedOrder.cancelReason}</span>
-                      </div>
-                    )}
-                    {selectedOrder.cancelledDate && (
-                      <div className="detail-row">
-                        <span>Cancelled On:</span>
-                        <span>{formatDate(selectedOrder.cancelledDate)}</span>
-                      </div>
-                    )}
+                      {selectedOrder.trackingNumber && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500">Tracking:</span>
+                          <a 
+                            href={`https://tracking.example.com/?tracking=${selectedOrder.trackingNumber}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-emerald-700 hover:underline"
+                          >
+                            {selectedOrder.trackingNumber}
+                          </a>
+                        </div>
+                      )}
+                      {selectedOrder.cancelReason && (
+                        <div className="flex items-center justify-between"><span className="text-gray-500">Cancel Reason:</span><span>{selectedOrder.cancelReason}</span></div>
+                      )}
+                      {selectedOrder.cancelledDate && (
+                        <div className="flex items-center justify-between"><span className="text-gray-500">Cancelled On:</span><span>{formatDate(selectedOrder.cancelledDate)}</span></div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="detail-section">
-                    <h3>Items Ordered</h3>
-                    <div className="detailed-items">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900">Items Ordered</h3>
+                    <div className="mt-2 space-y-3">
                       {selectedOrder.items.map(item => (
-                        <div key={`${selectedOrder.id}-${item.id}-detail`} className="detailed-item">
-                          <img src={item.image} alt={item.name} />
-                          <div className="item-info">
-                            <h4>{item.name}</h4>
-                            <p>Quantity: {item.quantity}</p>
-                            <p className="item-price">KSH {Number(item.price || 0).toLocaleString()} each</p>
+                        <div key={`${selectedOrder.id}-${item.id}-detail`} className="flex items-center justify-between gap-3 p-2 rounded-md border border-gray-100 bg-gray-50">
+                          <div className="flex items-center gap-3">
+                            <img className="w-12 h-12 rounded object-cover" src={item.image} alt={item.name} />
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                              <div className="text-xs text-gray-500">Qty: {item.quantity}</div>
+                            </div>
                           </div>
-                          <div className="item-total">
-                            KSH {(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString()}
-                          </div>
+                          <div className="text-sm text-gray-900">KSH {(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString()}</div>
                         </div>
                       ))}
                     </div>
@@ -538,53 +549,47 @@ const OrdersPage = () => {
                       const computedSubtotal = selectedOrder.items.reduce((sum, it) => sum + Number(it.price || 0) * Number(it.quantity || 1), 0);
                       const displayedTotal = Number(selectedOrder.total || computedSubtotal);
                       return (
-                        <div className="order-summary">
-                          <div className="summary-row">
-                            <span>Subtotal:</span>
-                            <span>KSH {computedSubtotal.toLocaleString()}</span>
-                          </div>
-                          <div className="summary-row total-row">
-                            <span>Total to Pay:</span>
-                            <span><strong>KSH {displayedTotal.toLocaleString()}</strong></span>
-                          </div>
+                        <div className="mt-3 space-y-2 text-sm">
+                          <div className="flex items-center justify-between"><span className="text-gray-500">Subtotal:</span><span>KSH {computedSubtotal.toLocaleString()}</span></div>
+                          <div className="flex items-center justify-between font-semibold"><span>Total to Pay:</span><span>KSH {displayedTotal.toLocaleString()}</span></div>
                         </div>
                       );
                     })()}
                   </div>
 
-                  <div className="detail-section">
-                    <h3>Shipping Information</h3>
-                    <p>{selectedOrder.shippingAddress}</p>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900">Shipping Information</h3>
+                    <p className="mt-2 text-sm text-gray-700">{selectedOrder.shippingAddress}</p>
                     {selectedOrder.estimatedDelivery && (
-                      <p><strong>Estimated Delivery:</strong> {formatDate(selectedOrder.estimatedDelivery)}</p>
+                      <p className="text-sm text-gray-700"><strong>Estimated Delivery:</strong> {formatDate(selectedOrder.estimatedDelivery)}</p>
                     )}
                     {selectedOrder.actualDelivery && (
-                      <p><strong>Delivered on:</strong> {formatDate(selectedOrder.actualDelivery)}</p>
+                      <p className="text-sm text-gray-700"><strong>Delivered on:</strong> {formatDate(selectedOrder.actualDelivery)}</p>
                     )}
                   </div>
 
-                  <div className="detail-actions">
+                  <div className="flex flex-wrap gap-2">
                     <button 
-                      className="reorder-btn"
+                      className="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => handleReorder(selectedOrder)}
                     >
                       🔄 Reorder Items
                     </button>
                     <button 
-                      className="print-order-btn"
+                      className="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => printOrder(selectedOrder)}
                     >
                       🖨️ Print Order
                     </button>
                     <button 
-                      className="download-receipt-btn"
-                      onClick={() => downloadReceipt(selectedOrder)}
+                      className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
+                      onClick={() => downloadReceiptOrCart(selectedOrder)}
                     >
-                      📄 Download Receipt
+                      📄 {(['paid','completed','success','delivered'].includes((selectedOrder.status||'').toLowerCase()) ? 'Download Receipt' : 'Download Cart PDF')}
                     </button>
                     {selectedOrder.status === 'delivered' && (
                       <button 
-                        className="delete-order-btn"
+                        className="inline-flex items-center justify-center rounded-md border border-red-300 text-red-700 bg-red-50 px-3 py-1.5 text-sm hover:bg-red-100"
                         onClick={() => handleDeleteOrder(selectedOrder.id)}
                       >
                         <FaTrash style={{ marginRight: 6 }} /> Delete Order
@@ -592,7 +597,7 @@ const OrdersPage = () => {
                     )}
                     {(selectedOrder.status === 'processing' || selectedOrder.status === 'shipped') && (
                       <button 
-                        className="cancel-order-btn"
+                        className="inline-flex items-center justify-center rounded-md border border-amber-300 text-amber-700 bg-amber-50 px-3 py-1.5 text-sm hover:bg-amber-100"
                         onClick={() => handleCancelOrder(selectedOrder)}
                       >
                         ❌ Cancel Order
@@ -607,22 +612,20 @@ const OrdersPage = () => {
 
         {/* Cancel Order Modal */}
         {showCancelModal && (
-          <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
-            <div className="cancel-modal" onClick={(e) => e.stopPropagation()}>
-              <h3>Cancel Order #{orderToCancel?.id}</h3>
-              <p>You're about to cancel this order. Are you sure you want to proceed?</p>
-              <p className="cancel-warning">
-                ⚠️ This action cannot be undone. Any shipped items will need to be returned.
-              </p>
-              <div className="modal-actions">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowCancelModal(false)}>
+            <div className="w-full max-w-md bg-white rounded-xl shadow-xl p-6" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-lg font-semibold text-gray-900">Cancel Order #{orderToCancel?.id}</h3>
+              <p className="mt-2 text-sm text-gray-700">You're about to cancel this order. Are you sure you want to proceed?</p>
+              <p className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">⚠️ This action cannot be undone. Any shipped items will need to be returned.</p>
+              <div className="mt-4 flex items-center justify-end gap-2">
                 <button 
-                  className="cancel-btn-secondary"
+                  className="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
                   onClick={() => setShowCancelModal(false)}
                 >
                   Keep Order
                 </button>
                 <button 
-                  className="confirm-cancel-btn"
+                  className="inline-flex items-center justify-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
                   onClick={confirmCancelOrder}
                 >
                   Yes, Cancel Order

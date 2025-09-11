@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import Checkout from './Checkout';
-import './Cart.css';
+// Tailwind conversion: removed external CSS import
 
 const Cart = ({ isOpen, onClose, onOpenQuickView }) => {
   const { cartItems, updateQuantity, removeFromCart, getCartTotal, clearCart } = useCart();
@@ -34,114 +34,70 @@ const Cart = ({ isOpen, onClose, onOpenQuickView }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="cart-overlay" onClick={onClose}>
-      <div className="cart-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="cart-header">
-          <h2>Shopping Cart ({cartItems.length} items)</h2>
-          <button className="cart-close" onClick={onClose}>×</button>
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b p-4">
+          <h2 className="text-lg font-semibold text-gray-900">Shopping Cart ({cartItems.length} items)</h2>
+          <button className="text-2xl leading-none text-gray-600 hover:text-emerald-700" onClick={onClose}>×</button>
         </div>
 
-        <div className="cart-content">
+        <div className="p-4">
           {cartItems.length === 0 ? (
-            <div className="empty-cart">
-              <div className="empty-cart-icon">🛒</div>
-              <h3>Your cart is empty</h3>
+            <div className="rounded-xl border border-emerald-100 bg-white p-6 text-center text-gray-700">
+              <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-2xl">🛒</div>
+              <h3 className="text-lg font-semibold text-gray-900">Your cart is empty</h3>
               <p>Add some natural remedies to your cart to get started!</p>
-              <button className="continue-shopping" onClick={onClose}>
+              <button className="mt-3 inline-flex items-center justify-center rounded-md border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50" onClick={onClose}>
                 Continue Shopping
               </button>
             </div>
           ) : (
             <>
-              <div className="cart-items">
+              <div className="space-y-3">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="cart-item">
-                    <div className="item-image">
-                      <img src={item.image} alt={item.name} />
+                  <div key={item.id} className="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-lg border border-emerald-100 bg-white p-3 shadow-sm">
+                    <img className="h-16 w-16 rounded object-cover" src={item.image} alt={item.name} />
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900">{item.name}</h4>
+                      <p className="text-xs text-gray-600">{item.category}</p>
                     </div>
-                    
-                    <div className="item-details">
-                      <h3>{item.name}</h3>
-                      <p className="item-category">{item.category}</p>
-                      <div className="item-diseases">
-                        <strong>Treats:</strong> {item.diseases?.join(', ')}
+                    <div className="text-right">
+                      <div className="inline-flex items-center rounded-md border border-gray-300">
+                        <button className="px-2 py-1 text-lg disabled:opacity-40" onClick={() => handleQuantityChange(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>-</button>
+                        <span className="px-3 text-sm">{item.quantity}</span>
+                        <button className="px-2 py-1 text-lg" onClick={() => handleQuantityChange(item.id, item.quantity + 1)}>+</button>
                       </div>
-                      
-                      <div className="item-actions">
-                        <button 
-                          className="quick-view-btn"
-                          onClick={() => onOpenQuickView(item)}
-                        >
-                          Quick View
-                        </button>
-                        <button 
-                          className="remove-btn"
-                          onClick={async () => {
-                            try {
-                              await removeFromCart(item.id);
-                            } catch (error) {
-                              console.error('Failed to remove item:', error);
-                              // Could show a toast notification here
-                            }
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="item-controls">
-                      <div className="quantity-controls">
-                        <button 
-                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                          className="quantity-btn"
-                        >
-                          -
-                        </button>
-                        <span className="quantity">{item.quantity}</span>
-                        <button 
-                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          className="quantity-btn"
-                        >
-                          +
-                        </button>
-                      </div>
-                      
-                      <div className="item-price">
-                        <div className="unit-price">KSH {item.price}</div>
-                        <div className="total-price">
-                          KSH {(parseFloat(item.price.replace(',', '')) * item.quantity).toLocaleString()}
-                        </div>
-                      </div>
+                      <div className="text-sm text-gray-700">KSH {(parseFloat(item.price.replace(',', '')) * item.quantity).toLocaleString()}</div>
+                      <button className="text-xs text-red-600 hover:underline" onClick={() => removeFromCart(item.id)}>Remove</button>
                     </div>
                   </div>
                 ))}
               </div>
-
-              <div className="cart-summary">
-                <div className="summary-row subtotal">
+ 
+              <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+                <div className="flex items-center justify-between text-sm">
                   <span>Subtotal:</span>
                   <span>KSH {getCartTotal().toLocaleString()}</span>
                 </div>
-                <div className="summary-row shipping">
+                <div className="flex items-center justify-between text-sm">
                   <span>Shipping:</span>
                   <span>Free</span>
                 </div>
-                <div className="summary-row total">
+                <div className="mt-2 flex items-center justify-between border-t pt-2 text-base font-semibold">
                   <span>Total:</span>
                   <span>KSH {getCartTotal().toLocaleString()}</span>
                 </div>
                 
-                <div className="cart-actions">
-                  <button className="continue-shopping" onClick={onClose}>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <button className="inline-flex items-center justify-center rounded-md border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50" onClick={onClose}>
                     Continue Shopping
                   </button>
-                  <button className="checkout-btn" onClick={handleCheckout}>
+                  <button className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600" onClick={handleCheckout}>
                     Proceed to Checkout
                   </button>
                 </div>
                 
-                <button className="clear-cart" onClick={clearCart}>
+                <button className="mt-3 text-sm text-red-600 hover:underline" onClick={clearCart}>
                   Clear Cart
                 </button>
               </div>

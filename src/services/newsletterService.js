@@ -117,6 +117,58 @@ export const newsletterService = {
   },
 
   /**
+   * Fetch all newsletters (admin only)
+   */
+  getAllNewsletters: async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Authentication token required');
+      const res = await fetch(`${API_BASE_URL}/newsletter/all-newsletters`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({}));
+        throw new Error(err.message || `HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    } catch (error) {
+      console.error('Newsletter Service - Error fetching all newsletters:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Fetch newsletter detail by id (admin only)
+   * @param {number|string} newsletterId
+   */
+  getNewsletterDetail: async (newsletterId) => {
+    try {
+      if (!newsletterId && newsletterId !== 0) throw new Error('Newsletter id is required');
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Authentication token required');
+      const res = await fetch(`${API_BASE_URL}/newsletter/newsletter-detail/${newsletterId}/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({}));
+        throw new Error(err.message || `HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    } catch (error) {
+      console.error('Newsletter Service - Error fetching newsletter detail:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Unsubscribe from newsletter
    * @param {string} email - Email address to unsubscribe
    * @returns {Promise<Object>} Response with unsubscription status

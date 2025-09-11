@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './VerifyEmail.css';
+// Tailwind conversion: removed external CSS import
 
 const EmailVerification = () => {
   const location = useLocation();
@@ -175,67 +175,71 @@ const EmailVerification = () => {
 
   if (!email) {
     return (
-      <div className="email-verification-container">
-        <div className="verification-box">
-          <h2>Email Not Found</h2>
-          <p>We couldn't find your email address. Please try signing up again.</p>
-          <button onClick={() => navigate('/login')}>
-            Go to Login/Signup
-          </button>
+      <div className="mt-[64px] md:mt-[72px]">
+        <div className="mx-auto max-w-md px-4">
+          <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-semibold text-gray-900">Email Not Found</h2>
+            <p className="mt-1 text-gray-700">We couldn't find your email address. Please try signing up again.</p>
+            <button onClick={() => navigate('/login')} className="mt-4 inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600">
+              Go to Login/Signup
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="email-verification-container">
-      <div className="verification-box">
-        <button className="back-button" onClick={handleBack}>← Back</button>
+    <div className="mt-[64px] md:mt-[72px]">
+      <div className="mx-auto max-w-md px-4">
+        <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <button className="text-sm text-gray-600 hover:text-emerald-700" onClick={handleBack}>← Back</button>
 
-        <div className="verification-logo">
-          <img
-            src="https://res.cloudinary.com/djksfayfu/image/upload/v1753272258/Gems_of_insight_logo_ghxcbv.png"
-            alt="Gems of Insight"
-            className="logo-image"
-          />
-        </div>
-
-        <h2>Verify Your Email with OTP</h2>
-        <p>We've sent a One-Time Password (OTP) to <strong>{email}</strong>. Please enter the 6-digit code below.</p>
-
-        <form onSubmit={handleVerify}>
-          <div className="form-group">
-            <input
-              type="text"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              placeholder="Enter 6-digit OTP code"
-              className={error ? 'error' : ''}
-              required
-              maxLength="6"
+          <div className="mt-3 flex justify-center">
+            <img
+              src="https://res.cloudinary.com/djksfayfu/image/upload/v1753272258/Gems_of_insight_logo_ghxcbv.png"
+              alt="Gems of Insight"
+              className="h-48 w-auto object-contain"
             />
           </div>
 
-          {error && <div className="error-message">{error}</div>}
-          {success && <div className="success-message">{success}</div>}
+          <h2 className="mt-4 text-xl font-semibold text-gray-900">Verify Your Email with OTP</h2>
+          <p className="mt-1 text-gray-700">We've sent a One-Time Password (OTP) to <strong>{email}</strong>. Please enter the 6-digit code below.</p>
 
-          <button type="submit" disabled={loading || !verificationCode.trim()}>
-            {loading ? 'Verifying OTP...' : 'Verify OTP'}
-          </button>
-        </form>
+          <form onSubmit={handleVerify} className="mt-4 space-y-3">
+            <div>
+              <input
+                type="text"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                placeholder="Enter 6-digit OTP code"
+                className={`w-full rounded-md border ${error ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300 focus:ring-2 focus:ring-emerald-200'} px-3 py-2 text-sm outline-none`}
+                required
+                maxLength="6"
+              />
+            </div>
 
-        <div className="resend-section">
-          <p className="resend-text">
-            Didn't receive the OTP?{' '}
-            <button
-              type="button"
-              onClick={handleResendCode}
-              disabled={loading}
-              className="resend-button"
-            >
-              {loading ? 'Sending...' : 'Resend OTP'}
+            {error && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</div>}
+            {success && <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{success}</div>}
+
+            <button type="submit" disabled={loading || !verificationCode.trim()} className="inline-flex w-full items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-60">
+              {loading ? 'Verifying OTP...' : 'Verify OTP'}
             </button>
-          </p>
+          </form>
+
+          <div className="mt-3 text-center text-sm text-gray-700">
+            <p>
+              Didn't receive the OTP?{' '}
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={loading}
+                className="text-emerald-700 hover:underline disabled:opacity-60"
+              >
+                {loading ? 'Sending...' : 'Resend OTP'}
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>

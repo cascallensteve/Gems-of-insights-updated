@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import './ProductView.css';
+// Tailwind conversion: removed external CSS import
 
 const ProductViewPage = () => {
   const { id } = useParams();
@@ -128,10 +128,10 @@ const ProductViewPage = () => {
 
   if (loading) {
     return (
-      <div className="product-view-page">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading product details...</p>
+      <div className="min-h-[60vh] grid place-items-center p-6">
+        <div className="text-center">
+          <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent"></div>
+          <p className="text-sm text-gray-700">Loading product details...</p>
         </div>
       </div>
     );
@@ -142,161 +142,154 @@ const ProductViewPage = () => {
   }
 
   return (
-    <div className="product-view-page">
-      <div className="product-view-container">
-        <button className="back-to-shop-btn" onClick={() => navigate('/shop')}>
-          ← Back to Shop
-        </button>
-        
-        <div className="product-view-content">
-          <div className="product-view-left">
-            <div className="product-main-image">
-              <img src={product.image} alt={product.name} />
-              {product.sale && <div className="sale-badge">SALE</div>}
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      <button
+        className="mb-4 inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
+        onClick={() => navigate('/shop')}
+      >
+        ← Back to Shop
+      </button>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="rounded-xl border border-gray-200 bg-white p-3">
+          <div className="relative overflow-hidden rounded-lg">
+            <img className="h-80 w-full object-cover" src={product.image} alt={product.name} />
+            {product.sale && (
+              <div className="absolute left-3 top-3 rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white">SALE</div>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <div className="mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wide text-emerald-700">{product.category}</span>
+            <h1 className="mt-1 text-xl font-bold text-gray-900">{product.name}</h1>
+            <div className="mt-1 flex items-center gap-2 text-sm text-gray-700">
+              <div>{'⭐'.repeat(Math.floor(product.rating))}</div>
+              <span className="text-gray-600">({product.rating}/5 - 127 reviews)</span>
+            </div>
+            <div className="mt-2 flex flex-wrap items-baseline gap-2">
+              <span className="text-2xl font-bold text-gray-900">KSH {product.price}</span>
+              {product.originalPrice && (
+                <span className="text-sm text-gray-500 line-through">KSH {product.originalPrice}</span>
+              )}
+              {product.sale && (
+                <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">
+                  Save KSH {(parseFloat(product.originalPrice?.replace(',', '') || 0) - parseFloat(product.price.replace(',', ''))).toLocaleString()}
+                </span>
+              )}
             </div>
           </div>
-          
-          <div className="product-view-right">
-            <div className="product-header">
-              <span className="product-category">{product.category}</span>
-              <h1 className="product-name">{product.name}</h1>
-              
-              <div className="product-rating">
-                <div className="stars">
-                  {'⭐'.repeat(Math.floor(product.rating))}
-                </div>
-                <span className="rating-text">({product.rating}/5 - 127 reviews)</span>
+
+          {product.diseases && (
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-gray-900">Treats These Conditions:</h3>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {product.diseases.map((disease, index) => (
+                  <span key={index} className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800">{disease}</span>
+                ))}
               </div>
-              
-              <div className="product-price">
-                <span className="current-price">KSH {product.price}</span>
-                {product.originalPrice && (
-                  <span className="original-price">KSH {product.originalPrice}</span>
-                )}
-                {product.sale && (
-                  <span className="discount">
-                    Save KSH {(parseFloat(product.originalPrice?.replace(',', '') || 0) - parseFloat(product.price.replace(',', ''))).toLocaleString()}
-                  </span>
-                )}
+            </div>
+          )}
+
+          <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-700">Quantity:</label>
+              <div className="inline-flex items-center gap-3 rounded-md border border-gray-200 bg-white px-2 py-1">
+                <button className="h-7 w-7 rounded-md bg-gray-50 text-gray-800 hover:bg-gray-100" onClick={() => handleQuantityChange(-1)}>-</button>
+                <span className="min-w-[16px] text-center text-sm">{quantity}</span>
+                <button className="h-7 w-7 rounded-md bg-gray-50 text-gray-800 hover:bg-gray-100" onClick={() => handleQuantityChange(1)}>+</button>
               </div>
             </div>
 
-            {product.diseases && (
-              <div className="product-diseases">
-                <h3>Treats These Conditions:</h3>
-                <div className="diseases-list">
-                  {product.diseases.map((disease, index) => (
-                    <span key={index} className="disease-tag">{disease}</span>
-                  ))}
-                </div>
-              </div>
-            )}
+            <button className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-700" onClick={handleAddToCart}>
+              Add to Cart - KSH {(parseFloat(product.price.replace(',', '')) * quantity).toLocaleString()}
+            </button>
+            <button
+              className="inline-flex items-center justify-center rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+              onClick={() => navigate('/shop')}
+            >
+              Shop More Products
+            </button>
+          </div>
 
-            <div className="product-actions">
-              <div className="quantity-selector">
-                <label>Quantity:</label>
-                <div className="quantity-controls">
-                  <button onClick={() => handleQuantityChange(-1)}>-</button>
-                  <span>{quantity}</span>
-                  <button onClick={() => handleQuantityChange(1)}>+</button>
-                </div>
-              </div>
-              
-              <button className="add-to-cart-btn" onClick={handleAddToCart}>
-                Add to Cart - KSH {(parseFloat(product.price.replace(',', '')) * quantity).toLocaleString()}
+          <div className="mt-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"><span>🌿</span><span>100% Natural</span></div>
+              <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"><span>🚚</span><span>Free Delivery</span></div>
+              <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"><span>💯</span><span>Money Back</span></div>
+              <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"><span>🧪</span><span>Lab Tested</span></div>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <div className="flex flex-wrap gap-2">
+              <button
+                className={`rounded-md px-3 py-1.5 text-sm ${selectedTab === 'description' ? 'bg-emerald-600 text-white' : 'border border-gray-200 bg-white text-gray-800 hover:bg-gray-50'}`}
+                onClick={() => setSelectedTab('description')}
+              >
+                Description
+              </button>
+              <button
+                className={`rounded-md px-3 py-1.5 text-sm ${selectedTab === 'usage' ? 'bg-emerald-600 text-white' : 'border border-gray-200 bg-white text-gray-800 hover:bg-gray-50'}`}
+                onClick={() => setSelectedTab('usage')}
+              >
+                Usage & Dosage
+              </button>
+              <button
+                className={`rounded-md px-3 py-1.5 text-sm ${selectedTab === 'ingredients' ? 'bg-emerald-600 text-white' : 'border border-gray-200 bg-white text-gray-800 hover:bg-gray-50'}`}
+                onClick={() => setSelectedTab('ingredients')}
+              >
+                Ingredients
               </button>
             </div>
 
-            <div className="product-features">
-              <div className="feature">
-                <span className="feature-icon">🌿</span>
-                <span>100% Natural</span>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">🚚</span>
-                <span>Free Delivery</span>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">💯</span>
-                <span>Money Back Guarantee</span>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">🧪</span>
-                <span>Lab Tested</span>
-              </div>
-            </div>
-
-            <div className="product-tabs">
-              <div className="tab-buttons">
-                <button 
-                  className={selectedTab === 'description' ? 'active' : ''}
-                  onClick={() => setSelectedTab('description')}
-                >
-                  Description
-                </button>
-                <button 
-                  className={selectedTab === 'usage' ? 'active' : ''}
-                  onClick={() => setSelectedTab('usage')}
-                >
-                  Usage & Dosage
-                </button>
-                <button 
-                  className={selectedTab === 'ingredients' ? 'active' : ''}
-                  onClick={() => setSelectedTab('ingredients')}
-                >
-                  Ingredients
-                </button>
-              </div>
-              
-              <div className="tab-content">
-                {selectedTab === 'description' && (
-                  <div className="tab-panel">
-                    <p>{product.description}</p>
-                    {product.benefits && (
-                      <div className="benefits-section">
-                        <h4>Key Benefits:</h4>
-                        <ul>
-                          {product.benefits.map((benefit, index) => (
-                            <li key={index}>{benefit}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {selectedTab === 'usage' && (
-                  <div className="tab-panel">
-                    <h4>How to Use:</h4>
-                    <p>{product.usage}</p>
-                    <div className="usage-tips">
-                      <h5>Tips for Best Results:</h5>
-                      <ul>
-                        <li>Store in a cool, dry place</li>
-                        <li>Follow recommended dosage</li>
-                        <li>Consult healthcare provider if pregnant or nursing</li>
-                        <li>Discontinue if any adverse reactions occur</li>
+            <div className="mt-3 rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-800">
+              {selectedTab === 'description' && (
+                <div>
+                  <p>{product.description}</p>
+                  {product.benefits && (
+                    <div className="mt-3">
+                      <h4 className="text-sm font-semibold">Key Benefits:</h4>
+                      <ul className="ml-4 list-disc">
+                        {product.benefits.map((benefit, index) => (
+                          <li key={index}>{benefit}</li>
+                        ))}
                       </ul>
                     </div>
+                  )}
+                </div>
+              )}
+              {selectedTab === 'usage' && (
+                <div>
+                  <h4 className="text-sm font-semibold">How to Use:</h4>
+                  <p>{product.usage}</p>
+                  <div className="mt-2">
+                    <h5 className="text-sm font-semibold">Tips for Best Results:</h5>
+                    <ul className="ml-4 list-disc">
+                      <li>Store in a cool, dry place</li>
+                      <li>Follow recommended dosage</li>
+                      <li>Consult healthcare provider if pregnant or nursing</li>
+                      <li>Discontinue if any adverse reactions occur</li>
+                    </ul>
                   </div>
-                )}
-                
-                {selectedTab === 'ingredients' && (
-                  <div className="tab-panel">
-                    <h4>Ingredients:</h4>
-                    <p>{product.ingredients}</p>
-                    <div className="ingredients-info">
-                      <h5>Quality Assurance:</h5>
-                      <ul>
-                        <li>All ingredients are organic and natural</li>
-                        <li>No artificial preservatives or additives</li>
-                        <li>Third-party tested for purity and potency</li>
-                        <li>GMP certified manufacturing facility</li>
-                      </ul>
-                    </div>
+                </div>
+              )}
+              {selectedTab === 'ingredients' && (
+                <div>
+                  <h4 className="text-sm font-semibold">Ingredients:</h4>
+                  <p>{product.ingredients}</p>
+                  <div className="mt-2">
+                    <h5 className="text-sm font-semibold">Quality Assurance:</h5>
+                    <ul className="ml-4 list-disc">
+                      <li>All ingredients are organic and natural</li>
+                      <li>No artificial preservatives or additives</li>
+                      <li>Third-party tested for purity and potency</li>
+                      <li>GMP certified manufacturing facility</li>
+                    </ul>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

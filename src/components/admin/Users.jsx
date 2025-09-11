@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import LoadingDots from '../LoadingDots';
-import './Users.css';
 import apiService from "../../services/api";
 
 const Users = () => {
@@ -270,23 +269,23 @@ const Users = () => {
   const stats = getUserStats();
 
   return (
-    <div className="users-management">
+    <div className="p-4">
       {/* Header */}
-      <div className="users-header">
-        <div className="header-logo">
+      <div className="flex items-center justify-between rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+        <div className="flex items-center gap-3">
           <img 
             src="/images/Gems_of_insight_logo_ghxcbv (1).png" 
             alt="Gems of Insight Logo" 
-            className="admin-logo"
+            className="h-10 w-10 object-contain"
           />
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">User Management</h1>
+            <p className="text-sm text-gray-700">Manage and monitor all registered users ({users.length} total)</p>
+          </div>
         </div>
-        <div className="header-content">
-          <h1>User Management</h1>
-          <p>Manage and monitor all registered users ({users.length} total)</p>
-        </div>
-        <div className="header-actions">
+        <div className="flex items-center gap-2">
           <button 
-            className="refresh-btn"
+            className="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
             onClick={fetchUsers}
             disabled={loading}
           >
@@ -294,7 +293,7 @@ const Users = () => {
             Refresh
           </button>
           <button 
-            className="add-user-btn"
+            className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-600"
             onClick={() => setShowUserModal(true)}
           >
             <span className="material-icons">person_add</span>
@@ -311,46 +310,46 @@ const Users = () => {
       )}
 
       {/* Stats Cards */}
-      <div className="users-stats">
-        <div className="stat-card">
-          <h3>Total Users</h3>
-          <p className="stat-number">{stats.total}</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <div className="text-xs text-gray-600">Total Users</div>
+          <div className="text-lg font-semibold text-gray-900">{stats.total}</div>
         </div>
-        <div className="stat-card">
-          <h3>Active Users</h3>
-          <p className="stat-number active">{stats.active}</p>
+        <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <div className="text-xs text-gray-600">Active Users</div>
+          <div className="text-lg font-semibold text-emerald-700">{stats.active}</div>
         </div>
-        <div className="stat-card">
-          <h3>Inactive Users</h3>
-          <p className="stat-number inactive">{stats.inactive}</p>
+        <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <div className="text-xs text-gray-600">Inactive Users</div>
+          <div className="text-lg font-semibold text-gray-900">{stats.inactive}</div>
         </div>
-        <div className="stat-card">
-          <h3>Pending Users</h3>
-          <p className="stat-number pending">{stats.pending}</p>
+        <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <div className="text-xs text-gray-600">Pending Users</div>
+          <div className="text-lg font-semibold text-amber-700">{stats.pending}</div>
         </div>
-        <div className="stat-card">
-          <h3>Administrators</h3>
-          <p className="stat-number admin">{stats.admins}</p>
+        <div className="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+          <div className="text-xs text-gray-600">Administrators</div>
+          <div className="text-lg font-semibold text-gray-900">{stats.admins}</div>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="users-controls">
-        <div className="search-section">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex-1 min-w-[220px]">
           <input
             type="text"
             placeholder="Search users by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200"
           />
         </div>
 
-        <div className="filter-section">
+        <div className="flex items-center gap-2">
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="filter-select"
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200"
           >
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
@@ -361,7 +360,7 @@ const Users = () => {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="sort-select"
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200"
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
@@ -372,24 +371,24 @@ const Users = () => {
         </div>
 
         {selectedUsers.length > 0 && (
-          <div className="bulk-actions">
-            <span>{selectedUsers.length} selected</span>
-            <button onClick={() => handleBulkAction('activate')}>Activate</button>
-            <button onClick={() => handleBulkAction('deactivate')}>Deactivate</button>
-            <button onClick={() => handleBulkAction('delete')} className="danger">Delete</button>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-700">{selectedUsers.length} selected</span>
+            <button className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" onClick={() => handleBulkAction('activate')}>Activate</button>
+            <button className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" onClick={() => handleBulkAction('deactivate')}>Deactivate</button>
+            <button className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700" onClick={() => handleBulkAction('delete')}>Delete</button>
           </div>
         )}
       </div>
 
       {/* Users Table */}
-      <div className="users-table-container">
+      <div className="mt-4 overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-sm">
         {loading ? (
-          <div className="loading-state">
+          <div className="p-6">
             <LoadingDots text="Loading users..." size="medium" />
           </div>
         ) : (
-          <table className="users-table">
-            <thead>
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-emerald-50 text-gray-900">
               <tr>
                 <th style={{width: '40px'}}>
                   <input
@@ -404,22 +403,22 @@ const Users = () => {
                     }}
                   />
                 </th>
-                <th style={{width: '180px'}}>User</th>
-                <th style={{width: '200px'}}>Email</th>
-                <th style={{width: '120px'}}>Phone</th>
-                <th style={{width: '100px'}}>Role</th>
-                <th style={{width: '100px'}}>Status</th>
-                <th style={{width: '120px'}}>Email Verified</th>
-                <th style={{width: '100px'}}>Join Date</th>
-                <th style={{width: '100px'}}>Last Login</th>
-                <th style={{width: '80px'}}>Orders</th>
-                <th style={{width: '120px'}}>Total Spent</th>
-                <th style={{width: '120px'}}>Actions</th>
+                <th className="px-3 py-2">User</th>
+                <th className="px-3 py-2">Email</th>
+                <th className="px-3 py-2">Phone</th>
+                <th className="px-3 py-2">Role</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Email Verified</th>
+                <th className="px-3 py-2">Join Date</th>
+                <th className="px-3 py-2">Last Login</th>
+                <th className="px-3 py-2">Orders</th>
+                <th className="px-3 py-2">Total Spent</th>
+                <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {currentUsers.map(user => (
-                <tr key={user.id}>
+                <tr key={user.id} className="hover:bg-gray-50">
                   <td>
                     <input
                       type="checkbox"
@@ -433,18 +432,18 @@ const Users = () => {
                       }}
                     />
                   </td>
-                  <td>
-                    <div className="user-info">
-                      <div className="user-avatar">
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-3">
+                      <div className="grid h-8 w-8 place-items-center rounded-full bg-emerald-600/10 text-sm font-semibold text-emerald-700">
                         {user.firstName[0]}{user.lastName?.[0]}
                       </div>
                       <div>
-                        <div className="user-name">{user.firstName} {user.lastName}</div>
-                        <div className="user-id">ID: {user.id}</div>
+                        <div className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</div>
+                        <div className="text-xs text-gray-600">ID: {user.id}</div>
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td className="px-3 py-2">
                     <div className="email-info">
                       <div>{user.email}</div>
                       {user._originalData && (
@@ -454,7 +453,7 @@ const Users = () => {
                       )}
                     </div>
                   </td>
-                  <td>
+                  <td className="px-3 py-2">
                     <div className="phone-info">
                       {user.phone}
                       {user._originalData?.phone_number && user._originalData.phone_number !== user.phone && (
@@ -462,41 +461,41 @@ const Users = () => {
                       )}
                     </div>
                   </td>
-                  <td>
-                    <span className={`role-badge ${user.role}`}>
+                  <td className="px-3 py-2">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ring-1 ${user.role === 'admin' ? 'bg-purple-50 text-purple-700 ring-purple-100' : 'bg-gray-100 text-gray-700 ring-gray-200'}`}>
                       {user.role || user._originalData?.userType || 'user'}
                     </span>
                   </td>
-                  <td>
-                    <span className={`status-badge ${user.status}`}>{user.status}</span>
+                  <td className="px-3 py-2">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ring-1 ${user.status === 'active' ? 'bg-emerald-50 text-emerald-700 ring-emerald-100' : user.status === 'pending' ? 'bg-amber-50 text-amber-700 ring-amber-100' : 'bg-gray-100 text-gray-700 ring-gray-200'}`}>{user.status}</span>
                   </td>
-                  <td>
-                    <span className={`verification-badge ${user.isEmailVerified ? 'verified' : 'unverified'}`}>
+                  <td className="px-3 py-2">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ring-1 ${user.isEmailVerified ? 'bg-emerald-50 text-emerald-700 ring-emerald-100' : 'bg-gray-100 text-gray-700 ring-gray-200'}`}>
                       {user.isEmailVerified ? 'Verified' : 'Unverified'}
                     </span>
                   </td>
-                  <td>{formatDate(user.joinDate)}</td>
-                  <td>{formatDate(user.lastLogin)}</td>
-                  <td>{user.orders}</td>
-                  <td>{formatCurrency(user.spent)}</td>
-                  <td>
-                    <div className="user-actions">
+                  <td className="px-3 py-2">{formatDate(user.joinDate)}</td>
+                  <td className="px-3 py-2">{formatDate(user.lastLogin)}</td>
+                  <td className="px-3 py-2">{user.orders}</td>
+                  <td className="px-3 py-2">{formatCurrency(user.spent)}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-1">
                       <button 
-                        className="action-btn view"
+                        className="inline-flex items-center rounded-md border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
                         onClick={() => handleUserAction('view', user.id)}
                         title="View Details"
                       >
                         <span className="material-icons">visibility</span>
                       </button>
                       <button 
-                        className="action-btn edit"
+                        className="inline-flex items-center rounded-md border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
                         onClick={() => handleUserAction('edit', user.id)}
                         title="Edit User"
                       >
                         <span className="material-icons">edit</span>
                       </button>
                       <button 
-                        className="action-btn toggle"
+                        className="inline-flex items-center rounded-md border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
                         onClick={() => handleUserAction('toggle-status', user.id)}
                         title={user.status === 'active' ? 'Deactivate' : 'Activate'}
                       >
@@ -505,7 +504,7 @@ const Users = () => {
                         </span>
                       </button>
                       <button 
-                        className="action-btn delete"
+                        className="inline-flex items-center rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
                         onClick={() => handleUserAction('delete', user.id)}
                         title="Delete User"
                       >
@@ -522,19 +521,20 @@ const Users = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination">
+        <div className="mt-3 flex items-center justify-center gap-1">
           <button 
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
           >
             <span className="material-icons">chevron_left</span>
           </button>
           
-          <div className="page-numbers">
+          <div className="flex items-center gap-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
               <button
                 key={page}
-                className={currentPage === page ? 'active' : ''}
+                className={`rounded-md border px-3 py-1.5 text-sm ${currentPage === page ? 'border-emerald-600 text-emerald-700' : 'border-gray-300 hover:bg-gray-50'}`}
                 onClick={() => setCurrentPage(page)}
               >
                 {page}
@@ -545,6 +545,7 @@ const Users = () => {
           <button 
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
           >
             <span className="material-icons">chevron_right</span>
           </button>

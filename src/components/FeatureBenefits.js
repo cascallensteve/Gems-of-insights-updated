@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import './FeatureBenefits.css';
 import { useInView } from 'react-intersection-observer';
 import { motion, useAnimation } from 'framer-motion';
 
@@ -118,26 +117,26 @@ const FeatureBenefits = () => {
   ];
 
   return (
-    <section className="feature-benefits" ref={ref}>
-      <div className="container">
-        <motion.div 
-          className="features-grid"
+    <section ref={ref} className="py-10 bg-white">
+      <div className="max-w-7xl mx-auto px-4">
+        <motion.div
+          className="grid gap-4 grid-cols-2 md:grid-cols-4"
           initial="hidden"
           animate={controls}
           variants={containerVariants}
         >
           {features.map((feature, index) => (
-            <motion.div 
+            <motion.div
               key={index}
-              className="feature-item"
+              className="rounded-lg border border-gray-100 bg-white p-4 text-center shadow-sm hover:shadow transition"
               variants={itemVariants}
               whileHover={{ y: -5 }}
             >
-              <div className="feature-icon" style={{ backgroundColor: `${feature.color}20`, color: feature.color }}>
+              <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full" style={{ backgroundColor: `${feature.color}20`, color: feature.color }}>
                 {renderIcon(feature.icon)}
               </div>
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
+              <h3 className="text-sm font-semibold text-gray-900">{feature.title}</h3>
+              <p className="mt-1 text-xs text-gray-600">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNotifications } from '../context/NotificationContext';
-import './AppointmentModal.css';
 // import { ArrowLeft, ArrowRight, CalendarCheck } from "lucide-react";
 
 const AppointmentModal = ({ isOpen, onClose }) => {
@@ -257,81 +256,49 @@ const handleSubmit = async (e) => {
   if (!isOpen) return null;
 
   return (
-    <div className="appointment-modal-overlay" onClick={onClose}>
-      <div className="appointment-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Book Your Appointment</h2>
-          <button className="close-btn" onClick={onClose}>×</button>
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto" onClick={onClose}>
+      <div className="relative w-full max-w-3xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden my-6" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-4 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-900">Book Your Appointment</h2>
+          <button className="text-2xl leading-none text-gray-500 hover:text-gray-700" onClick={onClose}>×</button>
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="error-display">
-            <div className="error-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="#EF4444" stroke="#DC2626" strokeWidth="2"/>
-                <path d="M15 9L9 15M9 9L15 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+          <div className="m-4 rounded-md border border-red-200 bg-red-50 text-red-700 p-3">
+            <div className="flex items-start gap-2">
+              <div className="mt-0.5">⚠️</div>
+              <div>
+                <h3 className="font-semibold">Booking Failed</h3>
+                <p className="text-sm">{error}</p>
+                <button className="mt-2 inline-flex items-center rounded-md bg-red-600 text-white px-3 py-1 text-sm" onClick={() => setError(null)}>
+                  Try Again
+                </button>
+              </div>
             </div>
-            <h3 className="error-title">Booking Failed</h3>
-            <p className="error-message">{error}</p>
-            <button className="error-close-btn" onClick={() => setError(null)}>
-              Try Again
-            </button>
           </div>
         )}
 
         {/* Success Screen */}
         {showSuccess && (
-          <div className="success-screen">
-            <div className="success-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" fill="#10B981" stroke="#059669" strokeWidth="2"/>
-                <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            
-            <h2 className="success-title">Appointment Booked Successfully! 🎉</h2>
-            <p className="success-message">{successData.message}</p>
-            
-            <div className="appointment-summary">
-              <h3>Appointment Details</h3>
-              <div className="summary-grid">
-                <div className="summary-item">
-                  <span className="summary-label">Name:</span>
-                  <span className="summary-value">{successData.appointmentDetails.name}</span>
-                </div>
-                <div className="summary-item">
-                  <span className="summary-label">Service:</span>
-                  <span className="summary-value">{successData.appointmentDetails.service}</span>
-                </div>
-                <div className="summary-item">
-                  <span className="summary-label">Date:</span>
-                  <span className="summary-value">{new Date(successData.appointmentDetails.date).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</span>
-                </div>
-                <div className="summary-item">
-                  <span className="summary-label">Time:</span>
-                  <span className="summary-value">{successData.appointmentDetails.time}</span>
-                </div>
-                <div className="summary-item">
-                  <span className="summary-label">Specialist:</span>
-                  <span className="summary-value">{successData.appointmentDetails.specialist}</span>
-                </div>
+          <div className="px-6 py-8 text-center">
+            <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-700">✓</div>
+            <h2 className="text-xl font-semibold text-gray-900">Appointment Booked Successfully! 🎉</h2>
+            <p className="text-gray-700 mt-1">{successData.message}</p>
+            <div className="mt-5 text-left">
+              <h3 className="text-sm font-semibold text-gray-800">Appointment Details</h3>
+              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                <div><span className="text-gray-500">Name:</span> <span className="font-medium text-gray-900">{successData.appointmentDetails.name}</span></div>
+                <div><span className="text-gray-500">Service:</span> <span className="font-medium text-gray-900">{successData.appointmentDetails.service}</span></div>
+                <div><span className="text-gray-500">Date:</span> <span className="font-medium text-gray-900">{new Date(successData.appointmentDetails.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
+                <div><span className="text-gray-500">Time:</span> <span className="font-medium text-gray-900">{successData.appointmentDetails.time}</span></div>
+                <div><span className="text-gray-500">Specialist:</span> <span className="font-medium text-gray-900">{successData.appointmentDetails.specialist}</span></div>
               </div>
             </div>
-            
-            <div className="success-actions">
-              <button className="success-close-btn" onClick={handleSuccessClose}>
-                Close
-              </button>
+            <div className="mt-6">
+              <button className="inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-4 py-2 text-sm font-medium shadow hover:bg-emerald-600" onClick={handleSuccessClose}>Close</button>
             </div>
-            
-            <div className="success-footer">
+            <div className="mt-3 text-sm text-gray-600">
               <p>We've sent a confirmation email to your inbox.</p>
               <p>Please check your email for further instructions.</p>
             </div>
@@ -340,73 +307,66 @@ const handleSubmit = async (e) => {
 
         {/* Progress Bar */}
         {!showSuccess && !error && (
-          <div className="progress-bar">
-          <div className="progress-steps">
+          <div className="px-4 pt-4">
+          <div className="flex items-center justify-between">
             {[1, 2, 3].map(step => (
-              <div 
-                key={step} 
-                className={`progress-step ${currentStep >= step ? 'active' : ''} ${step < currentStep ? 'clickable' : ''}`}
-                onClick={() => goToStep(step)}
-                title={step < currentStep ? 'Click to go back to this step' : ''}
-              >
-                <div className="step-circle">
-                  {step < currentStep ? '✓' : step}
-                </div>
-                <span className="step-label">
-                  {step === 1 ? 'Personal Info' : step === 2 ? 'Service & Specialist' : 'Date & Time'}
-                </span>
-              </div>
+              <button key={step} className={`flex items-center gap-2 text-sm ${currentStep >= step ? 'text-emerald-700' : 'text-gray-500'}`} onClick={() => goToStep(step)} title={step < currentStep ? 'Click to go back to this step' : ''}>
+                <span className={`grid h-7 w-7 place-items-center rounded-full border ${currentStep >= step ? 'border-emerald-600 bg-emerald-50' : 'border-gray-300'}`}>{step < currentStep ? '✓' : step}</span>
+                <span>{step === 1 ? 'Personal Info' : step === 2 ? 'Service & Specialist' : 'Date & Time'}</span>
+              </button>
             ))}
           </div>
-          <div 
-            className="progress-fill" 
-            style={{ width: `${(currentStep / 3) * 100}%` }}
-          ></div>
+          <div className="mt-2 h-1 w-full rounded bg-gray-100">
+            <div className="h-1 rounded bg-emerald-600" style={{ width: `${(currentStep / 3) * 100}%` }} />
+          </div>
         </div>
         )}
 
         {!showSuccess && !error && (
-          <form onSubmit={handleSubmit} className="appointment-form">
+          <form onSubmit={handleSubmit} className="px-4 pb-4">
           {/* Step 1: Personal Information */}
           {currentStep === 1 && (
-            <div className="form-step">
-              <h3>Personal Information</h3>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Full Name *</label>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">Personal Information</h3>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-700">Full Name *</label>
                   <input
                     type="text"
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleInputChange}
                     placeholder="Enter your full name"
+                    className="mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>Email Address *</label>
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-700">Email Address *</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="your.email@example.com"
+                    className="mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>Phone Number *</label>
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-700">Phone Number *</label>
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="+254 712 345 678"
+                    className="mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
                     pattern="^\+254[0-9]{9}$"
                     title="Please enter a valid Kenya phone number starting with +254 followed by 9 digits"
                     required
                   />
-                  <small className="phone-hint">Format: +254 followed by 9 digits (e.g., +254712345678)</small>
+                  <small className="text-xs text-gray-500">Format: +254 followed by 9 digits (e.g., +254712345678)</small>
                 </div>
               </div>
             </div>
@@ -414,43 +374,45 @@ const handleSubmit = async (e) => {
 
           {/* Step 2: Service & Specialist */}
           {currentStep === 2 && (
-            <div className="form-step">
-              <h3>Choose Service & Specialist</h3>
+            <div className="mt-6">
+              <h3 className="text-base font-semibold text-gray-900">Choose Service & Specialist</h3>
               
-              <div className="form-group">
-                <label>Select Service *</label>
-                <div className="service-cards">
+              <div className="mt-2">
+                <label className="text-sm text-gray-700">Select Service *</label>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {services.map(service => (
-                    <div 
+                    <button 
                       key={service.id}
-                      className={`service-card ${formData.service === service.id ? 'selected' : ''}`}
+                      type="button"
+                      className={`text-left rounded-md border px-3 py-2 ${formData.service === service.id ? 'border-emerald-600 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'}`}
                       onClick={() => setFormData(prev => ({ ...prev, service: service.id }))}
                     >
-                      <h4>{service.name}</h4>
-                      <div className="service-details">
-                        <span className="price">{service.price}</span>
-                        <span className="duration">{service.duration}</span>
+                      <div className="font-medium text-gray-900">{service.name}</div>
+                      <div className="mt-1 text-sm text-gray-600 flex items-center gap-3">
+                        <span>{service.price}</span>
+                        <span>{service.duration}</span>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>Choose Specialist *</label>
-                <div className="specialist-cards">
+              <div className="mt-4">
+                <label className="text-sm text-gray-700">Choose Specialist *</label>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {specialists.map(specialist => (
-                    <div 
+                    <button 
                       key={specialist.id}
-                      className={`specialist-card ${formData.specialist === specialist.id ? 'selected' : ''} ${!specialist.available ? 'disabled' : ''}`}
+                      type="button"
+                      className={`text-left rounded-md border px-3 py-2 ${formData.specialist === specialist.id ? 'border-emerald-600 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'} ${!specialist.available ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => specialist.available && setFormData(prev => ({ ...prev, specialist: specialist.id }))}
                     >
-                      <h4>{specialist.name}</h4>
-                      <p>{specialist.specialty}</p>
-                      <span className={`availability ${specialist.available ? 'available' : 'unavailable'}`}>
+                      <div className="font-medium text-gray-900">{specialist.name}</div>
+                      <p className="text-sm text-gray-600">{specialist.specialty}</p>
+                      <span className={`text-xs ${specialist.available ? 'text-emerald-700' : 'text-gray-400'}`}>
                         {specialist.available ? '✓ Available' : '✗ Unavailable'}
                       </span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -474,30 +436,31 @@ const handleSubmit = async (e) => {
 
           {/* Step 3: Date & Time */}
           {currentStep === 3 && (
-            <div className="form-step">
-              <h3>Select Date & Time</h3>
+            <div className="mt-6">
+              <h3 className="text-base font-semibold text-gray-900">Select Date & Time</h3>
               
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Preferred Date *</label>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-700">Preferred Date *</label>
                   <input
                     type="date"
                     name="date"
                     value={formData.date}
                     onChange={handleInputChange}
                     min={new Date().toISOString().split('T')[0]}
+                    className="mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
                     required
                   />
                 </div>
                 
-                <div className="form-group">
-                  <label>Preferred Time *</label>
-                  <div className="time-slots">
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-700">Preferred Time *</label>
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {timeSlots.map(time => (
                       <button
                         key={time}
                         type="button"
-                        className={`time-slot ${formData.time === time ? 'selected' : ''}`}
+                        className={`rounded-md border px-3 py-1.5 text-sm ${formData.time === time ? 'border-emerald-600 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'}`}
                         onClick={() => setFormData(prev => ({ ...prev, time }))}
                       >
                         {time}
@@ -507,39 +470,36 @@ const handleSubmit = async (e) => {
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>Additional Notes</label>
+              <div className="mt-3 flex flex-col">
+                <label className="text-sm text-gray-700">Additional Notes</label>
                 <textarea
                   name="notes"
                   value={formData.notes}
                   onChange={handleInputChange}
                   placeholder="Any specific symptoms, questions, or requirements..."
                   rows="4"
+                  className="mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
                 />
               </div>
             </div>
           )}
 
           {/* Form Navigation */}
-          <div className="form-navigation">
-            <div className="nav-left">
+          <div className="mt-4 flex items-center justify-between px-1">
+            <div>
               {currentStep > 1 && (
                 <>
-                  <button type="button" className="btn-secondary" onClick={handlePrevious}>
-                    ← Previous
-                  </button>
-                  <span className="back-hint">
-                    or click on step {currentStep - 1} above to go back
-                  </span>
+                  <button type="button" className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" onClick={handlePrevious}>← Previous</button>
+                  <span className="ml-2 text-xs text-gray-500">or click on step {currentStep - 1} above to go back</span>
                 </>
               )}
             </div>
             
-            <div className="nav-right">
+            <div>
               {currentStep < 3 ? (
                 <button 
                   type="button" 
-                  className="btn-primary" 
+                  className="inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-4 py-2 text-sm font-medium shadow hover:bg-emerald-600" 
                   onClick={handleNext}
                   disabled={!isStepValid()}
                 >
@@ -548,12 +508,12 @@ const handleSubmit = async (e) => {
               ) : (
                 <button 
                   type="submit" 
-                  className="btn-primary submit-btn"
+                  className="inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-4 py-2 text-sm font-medium shadow hover:bg-emerald-600"
                   disabled={!isStepValid() || isSubmitting}
                 >
                   {isSubmitting ? (
-                    <span className="loading">
-                      <span className="spinner"></span>
+                    <span className="inline-flex items-center gap-2">
+                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
                       Booking...
                     </span>
                   ) : (

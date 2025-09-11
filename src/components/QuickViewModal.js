@@ -17,7 +17,17 @@ const QuickViewModal = ({ product, isOpen, onClose, onViewFullDetails }) => {
     }
   }, [product]);
 
-  // Prevent modal from closing when clicking inside
+  // Manage body scroll lock when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [isOpen]);
 
   if (!isOpen || !product) return null;
 
@@ -47,8 +57,8 @@ const QuickViewModal = ({ product, isOpen, onClose, onViewFullDetails }) => {
   };
 
   return (
-    <div className="quick-view-overlay" onClick={onClose}>
-      <div className="quick-view-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="quick-view-overlay">
+      <div className="quick-view-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <button className="close-btn" onClick={onClose}>×</button>
         
         <div className="quick-view-content">
@@ -89,9 +99,9 @@ const QuickViewModal = ({ product, isOpen, onClose, onViewFullDetails }) => {
             <div className="product-price-section">
               <div className="price-display">
                 {product.originalPrice && (
-                  <span className="original-price">KSH {product.originalPrice}</span>
+                  <span className="original-price">KES {product.originalPrice}</span>
                 )}
-                <span className="current-price">KSH {product.price}</span>
+                <span className="current-price">KES {product.price}</span>
               </div>
               
               {product.sale && (
