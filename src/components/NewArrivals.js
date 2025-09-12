@@ -193,15 +193,7 @@ const NewArrivals = ({ onNavigateToShop, onQuickView, onProductView }) => {
                 </button>
 
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition pointer-events-none"/>
-                <div className="absolute bottom-2 right-2">
-                  <button 
-                    className="inline-flex items-center justify-center rounded-full bg-emerald-600 text-white w-9 h-9 shadow hover:bg-emerald-700"
-                    title="Add to cart"
-                    onClick={() => handleAddToCart(product)}
-                  >
-                    <HiPlus />
-                  </button>
-                </div>
+                {/* Removed floating add-to-cart icon to avoid duplication */}
               </div>
 
               <div className="p-3">
@@ -228,7 +220,7 @@ const NewArrivals = ({ onNavigateToShop, onQuickView, onProductView }) => {
         <div className="mt-10 text-center">
           <button 
             className="inline-flex items-center gap-2 rounded-full bg-emerald-700 text-white px-6 py-3 text-sm font-semibold shadow hover:bg-emerald-600"
-            onClick={() => onNavigateToShop && onNavigateToShop()}
+            onClick={() => (onNavigateToShop ? onNavigateToShop() : navigate('/shop'))}
           >
             Shop More Products
             <span>→</span>

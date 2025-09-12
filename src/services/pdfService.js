@@ -61,9 +61,9 @@ class PDFService {
       <div class="rounded-xl border border-emerald-100 bg-white p-4">
         <h2 class="mb-3 text-lg font-semibold text-emerald-700">Inquiry Details</h2>
         <div class="grid gap-3 sm:grid-cols-2 text-sm">
-          <div><div class="text-gray-500">Name</div><div class="font-medium">${contact?.name || 'N/A'}</div></div>
+          <div><div class="text-gray-500">Name</div><div class="font-medium">${contact?.full_name || contact?.name || 'N/A'}</div></div>
           <div><div class="text-gray-500">Email</div><div class="font-medium">${contact?.email || 'N/A'}</div></div>
-          <div><div class="text-gray-500">Phone</div><div class="font-medium">${contact?.phone || 'N/A'}</div></div>
+          <div><div class="text-gray-500">Phone</div><div class="font-medium">${contact?.phone_number || contact?.phone || 'N/A'}</div></div>
           <div><div class="text-gray-500">Date</div><div class="font-medium">${new Date(contact?.created_at || Date.now()).toLocaleString()}</div></div>
         </div>
         <div class="mt-4">
@@ -156,6 +156,231 @@ class PDFService {
         <tbody>${rows}</tbody>
       </table>`;
     this.openPrint(this.buildHtmlShell(title, body));
+  }
+
+  // --- Payments / Transactions (Printable HTML) ---
+  printTransactionReceipt(transaction) {
+    const user = transaction?.order?.user || {};
+    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'N/A';
+    const orderItems = (transaction?.order?.items || []).map((it, idx) => `
+      <tr class="border-b border-gray-100">
+        <td class="px-3 py-2 text-sm">${idx + 1}</td>
+        <td class="px-3 py-2 text-sm">${it?.item?.name || it?.item?.title || 'Item'}</td>
+        <td class="px-3 py-2 text-sm">${it?.quantity ?? 1}</td>
+      </tr>`).join('');
+
+    const body = `
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold">${this.companyName}</h1>
+          <div class="text-sm text-gray-600">Payment Receipt</div>
+        </div>
+        <div class="text-right text-sm text-gray-600">
+          <div>${this.companyEmail}</div>
+          <div>${this.companyPhone}</div>
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="rounded-xl border border-emerald-100 bg-white p-4">
+          <h2 class="mb-2 text-sm font-semibold text-emerald-700">Payer</h2>
+          <div class="text-sm"><span class="text-gray-500">Name:</span> <span class="font-medium">${fullName}</span></div>
+          <div class="text-sm"><span class="text-gray-500">Email:</span> <span class="font-medium">${user.email || 'N/A'}</span></div>
+        </div>
+        <div class="rounded-xl border border-emerald-100 bg-white p-4">
+          <h2 class="mb-2 text-sm font-semibold text-emerald-700">Payment</h2>
+          <div class="text-sm"><span class="text-gray-500">Transaction ID:</span> <span class="font-medium">${transaction?.id || '—'}</span></div>
+          <div class="text-sm"><span class="text-gray-500">Status:</span> <span class="font-medium">${transaction?.status || '—'}</span></div>
+          <div class="text-sm"><span class="text-gray-500">Amount:</span> <span class="font-medium">KES ${Number(transaction?.amount || 0).toFixed(2)}</span></div>
+          <div class="text-sm"><span class="text-gray-500">Phone:</span> <span class="font-medium">${transaction?.phone_number || '—'}</span></div>
+          <div class="text-sm"><span class="text-gray-500">Receipt:</span> <span class="font-medium">${transaction?.mpesa_receipt_number || '—'}</span></div>
+          <div class="text-sm"><span class="text-gray-500">Date:</span> <span class="font-medium">${new Date(transaction?.transaction_date || Date.now()).toLocaleString()}</span></div>
+        </div>
+      </div>
+
+      <div class="mt-4 rounded-xl border border-emerald-100 bg-white p-4">
+        <h2 class="mb-2 text-sm font-semibold text-emerald-700">Order</h2>
+        <div class="grid gap-3 sm:grid-cols-2 text-sm mb-3">
+          <div><span class="text-gray-500">Order ID:</span> <span class="font-medium">${transaction?.order?.id || '—'}</span></div>
+          <div><span class="text-gray-500">Order Status:</span> <span class="font-medium">${transaction?.order?.status || '—'}</span></div>
+        </div>
+        <table class="w-full table-auto border-collapse overflow-hidden rounded-md border border-gray-100">
+          <thead class="bg-emerald-50 text-emerald-800">
+            <tr>
+              <th class="px-3 py-2 text-left text-xs font-semibold">#</th>
+              <th class="px-3 py-2 text-left text-xs font-semibold">Item</th>
+              <th class="px-3 py-2 text-left text-xs font-semibold">Qty</th>
+            </tr>
+          </thead>
+          <tbody>${orderItems || ''}</tbody>
+        </table>
+      </div>`;
+
+    this.openPrint(this.buildHtmlShell('Payment Receipt', body));
+  }
+
+  // --- Payments / Transactions (PDF) ---
+  generateTransactionPDF(transaction) {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    const primary = [46, 125, 50];
+    const secondary = [31, 41, 55];
+    const subtle = [241, 245, 249];
+
+    this.addHeader(doc, pageWidth);
+
+    // Title
+    doc.setFontSize(24);
+    doc.setTextColor(...primary);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PAYMENT RECEIPT', pageWidth / 2, 85, { align: 'center' });
+
+    // Status badge
+    const status = (transaction?.status || 'unknown').toString().toLowerCase();
+    const statusMap = {
+      success: { fill: [220, 252, 231], text: [22, 101, 52], border: [187, 247, 208], label: 'SUCCESS' },
+      failed: { fill: [254, 226, 226], text: [153, 27, 27], border: [254, 202, 202], label: 'FAILED' },
+      pending: { fill: [255, 247, 237], text: [154, 52, 18], border: [254, 215, 170], label: 'PENDING' }
+    };
+    const st = statusMap[status] || { fill: [243, 244, 246], text: [31, 41, 55], border: [229, 231, 235], label: status.toUpperCase() };
+    doc.setFillColor(...st.fill);
+    doc.setDrawColor(...st.border);
+    doc.roundedRect(pageWidth / 2 - 20, 92, 40, 10, 3, 3, 'FD');
+    doc.setTextColor(...st.text);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(st.label, pageWidth / 2, 99, { align: 'center' });
+
+    // Divider
+    doc.setDrawColor(...primary);
+    doc.setLineWidth(0.8);
+    doc.line(20, 105, pageWidth - 20, 105);
+
+    // Two-column cards: Payer and Payment
+    const user = transaction?.order?.user || {};
+    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'N/A';
+
+    const cardY = 112;
+    const cardW = (pageWidth - 20 - 20 - 6) / 2; // margins 20 each, gap 6
+
+    // Payer card
+    doc.setFillColor(...subtle);
+    doc.roundedRect(20, cardY, cardW, 36, 3, 3, 'F');
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(20, cardY, cardW, 36, 3, 3, 'S');
+    doc.setFontSize(12);
+    doc.setTextColor(...primary);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Payer', 26, cardY + 8);
+    doc.setFontSize(10);
+    doc.setTextColor(...secondary);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Name: ${fullName}`, 26, cardY + 16);
+    doc.text(`Email: ${user.email || 'N/A'}`, 26, cardY + 24);
+    doc.text(`Phone: ${transaction?.phone_number || '—'}`, 26, cardY + 32);
+
+    // Payment card
+    const rightX = 20 + cardW + 6;
+    doc.setFillColor(...subtle);
+    doc.roundedRect(rightX, cardY, cardW, 36, 3, 3, 'F');
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(rightX, cardY, cardW, 36, 3, 3, 'S');
+    doc.setFontSize(12);
+    doc.setTextColor(...primary);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Payment', rightX + 6, cardY + 8);
+    doc.setFontSize(10);
+    doc.setTextColor(...secondary);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Transaction ID: ${String(transaction?.id || '—')}`, rightX + 6, cardY + 16);
+    doc.text(`Amount: KES ${Number(transaction?.amount || 0).toFixed(2)}`, rightX + 6, cardY + 24);
+    doc.text(`Date: ${new Date(transaction?.transaction_date || Date.now()).toLocaleString()}`, rightX + 6, cardY + 32);
+
+    // IDs row
+    let y = cardY + 46;
+    doc.setFontSize(11);
+    doc.setTextColor(...primary);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Identifiers', 20, y);
+    y += 4;
+    doc.setDrawColor(230, 230, 230);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(...secondary);
+    doc.setFont('helvetica', 'normal');
+    const idLines = [
+      `Checkout: ${transaction?.checkout_request_id || '—'}`,
+      `Merchant: ${transaction?.merchant_request_id || '—'}`,
+      `Receipt: ${transaction?.mpesa_receipt_number || '—'}`
+    ];
+    idLines.forEach((line, i) => {
+      doc.text(line, 20, y + (i * 6));
+    });
+    y += idLines.length * 6 + 6;
+
+    // Order section with table
+    const order = transaction?.order || {};
+    doc.setFontSize(12);
+    doc.setTextColor(...primary);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Order Summary', 20, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.setTextColor(...secondary);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Order ID: ${order?.id || '—'}`, 20, y);
+    doc.text(`Status: ${order?.status || '—'}`, 70, y);
+    y += 6;
+
+    const items = Array.isArray(order?.items) ? order.items : [];
+    if (items.length > 0) {
+      const body = items.map((it, idx) => [
+        idx + 1,
+        it?.item?.name || it?.item?.title || 'Item',
+        it?.quantity ?? 1
+      ]);
+      doc.autoTable({
+        head: [['#', 'Item', 'Qty']],
+        body,
+        startY: y,
+        styles: { fontSize: 9, cellPadding: 3, overflow: 'linebreak', halign: 'left' },
+        headStyles: { fillColor: primary, textColor: [255,255,255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248, 249, 250] },
+        columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 120 }, 2: { cellWidth: 20 } },
+        margin: { left: 20, right: 20 }
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    } else {
+      doc.setFontSize(10);
+      doc.setTextColor(108, 117, 125);
+      doc.text('No line items available.', 20, y);
+      y += 8;
+    }
+
+    // Total amount highlight
+    doc.setFillColor(...subtle);
+    doc.roundedRect(20, y, pageWidth - 40, 14, 3, 3, 'F');
+    doc.setFontSize(11);
+    doc.setTextColor(...primary);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TOTAL PAID:', 25, y + 9);
+    doc.setTextColor(...secondary);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`KES ${Number(transaction?.amount || 0).toFixed(2)}`, pageWidth - 25, y + 9, { align: 'right' });
+
+    // Footer
+    this.addFooter(doc, pageWidth, pageHeight);
+    return doc;
+  }
+
+  downloadTransactionPDF(transaction) {
+    const doc = this.generateTransactionPDF(transaction);
+    const id = transaction?.id || 'txn';
+    const filename = `receipt_${id}_${new Date().toISOString().split('T')[0]}.pdf`;
+    this.downloadPDF(doc, filename);
   }
 
   // --- User Profile (PDF) ---

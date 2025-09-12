@@ -27,30 +27,27 @@ const BlogPostView = () => {
   const loadBlogPost = async () => {
     try {
       setLoading(true);
-      // For now, we'll simulate getting a single blog post
-      // In a real app, you'd have an API endpoint like blogService.getBlogById(postId)
-      const allBlogs = await blogService.getAllBlogs();
-      const foundPost = allBlogs.find(blog => blog.id.toString() === postId);
-      
-      if (foundPost) {
-        const transformedPost = {
-          id: foundPost.id,
-          title: foundPost.title,
-          excerpt: foundPost.description,
-          image: getRandomImage(),
-          category: getCategoryFromTags(foundPost.tags),
-          date: foundPost.timestamp,
-          author: blogService.getAuthorName(foundPost.author),
-          readTime: foundPost.read_time,
-          tags: foundPost.tags || [],
-          body: foundPost.body,
-          likes: foundPost.likes || 0,
-          isLiked: foundPost.isLiked || false
-        };
-        setPost(transformedPost);
-      } else {
+      // Fetch exact blog by id so we can use the same image and content
+      const detailed = await blogService.getBlogById(postId);
+      if (!detailed) {
         setError('Blog post not found');
+        return;
       }
+      const transformedPost = {
+        id: detailed.id,
+        title: detailed.title,
+        excerpt: detailed.description,
+        image: detailed.photo || detailed.image || getRandomImage(),
+        category: getCategoryFromTags(blogService.parseTags?.(detailed.tag_list) || detailed.tags || []),
+        date: detailed.timestamp,
+        author: blogService.getAuthorName(detailed.author),
+        readTime: detailed.read_time,
+        tags: (blogService.parseTags?.(detailed.tag_list) || detailed.tags || []),
+        body: detailed.body,
+        likes: Array.isArray(detailed.likes) ? detailed.likes.length : (detailed.likes || 0),
+        isLiked: detailed.isLiked || false
+      };
+      setPost(transformedPost);
     } catch (error) {
       console.error('Error loading blog post:', error);
       setError('Failed to load blog post');
@@ -61,26 +58,30 @@ const BlogPostView = () => {
 
   const loadComments = async () => {
     try {
-      // Load comments from localStorage for now
-      // In a real app, you'd fetch from API: blogService.getComments(postId)
-      const storedComments = localStorage.getItem(`comments_${postId}`);
-      if (storedComments) {
-        setComments(JSON.parse(storedComments));
+      const apiComments = await blogService.getComments(postId);
+      if (Array.isArray(apiComments)) {
+        // Normalize to local shape
+        const normalized = apiComments.map(c => ({
+          id: c.id,
+          author: c.owner_username || 'User',
+          authorId: c.owner,
+          content: c.body || c.content || '',
+          timestamp: c.timestamp,
+          likes: 0,
+          replies: []
+        }));
+        setComments(normalized);
+        return;
       }
+      setComments([]);
     } catch (error) {
       console.error('Error loading comments:', error);
+      setComments([]);
     }
   };
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
-    
-    // Check if user is logged in
-    if (!currentUser) {
-      alert('Please login to comment on this blog post');
-      navigate('/login');
-      return;
-    }
     
     if (!newComment.trim()) {
       alert('Please enter a comment');
@@ -89,30 +90,30 @@ const BlogPostView = () => {
 
     try {
       setSubmittingComment(true);
-      
-      // Create new comment object with real user data
-      const comment = {
-        id: Date.now(),
-        postId: postId,
-        author: currentUser.full_name || currentUser.username || currentUser.email || 'Unknown User',
-        authorId: currentUser.id,
-        content: newComment.trim(),
-        timestamp: new Date().toISOString(),
-        likes: 0,
-        replies: []
-      };
-
-      // Add comment to state
-      const updatedComments = [comment, ...comments];
-      setComments(updatedComments);
-
-      // Save to localStorage (in real app, save to API)
-      localStorage.setItem(`comments_${postId}`, JSON.stringify(updatedComments));
-
-      // Clear form
-      setNewComment('');
-      
-      alert('Comment posted successfully!');
+      // Try posting to server first (auth required)
+      try {
+        const res = await blogService.addComment(postId, newComment.trim());
+        const c = res?.comment || {};
+        const normalized = {
+          id: c.id || Date.now(),
+          author: c.owner_username || 'You',
+          authorId: c.owner,
+          content: c.body || newComment.trim(),
+          timestamp: c.timestamp || new Date().toISOString(),
+          likes: 0,
+          replies: []
+        };
+        setComments(prev => [normalized, ...prev]);
+        setNewComment('');
+      } catch (serverErr) {
+        // If server fails (no auth), require login
+        if (!currentUser) {
+          alert('Please login to comment on this blog post');
+          navigate('/login');
+          return;
+        }
+        throw serverErr;
+      }
     } catch (error) {
       console.error('Error posting comment:', error);
       alert('Failed to post comment. Please try again.');

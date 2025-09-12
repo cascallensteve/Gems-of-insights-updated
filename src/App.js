@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
@@ -44,6 +44,7 @@ import NewFooter from './components/NewFooter';
 import VerifyEmailPage from './components/VerifyEmailPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
 import ResetPasswordPage from './components/ResetPasswordPage';
+import ResetTokenPage from './components/ResetTokenPage';
 import AboutPage from './components/AboutPage';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminSignup from './components/admin/AdminSignup';
@@ -82,6 +83,48 @@ function App() {
 function AppContent() {
   const location = useLocation();
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem('admin_theme') || 'system');
+
+  useEffect(() => {
+    const applyTheme = (mode) => {
+      const root = document.documentElement;
+      if (mode === 'light') {
+        root.classList.remove('dark');
+      } else if (mode === 'dark') {
+        root.classList.add('dark');
+      } else {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) root.classList.add('dark'); else root.classList.remove('dark');
+      }
+    };
+
+    // Apply immediately on mount and when mode changes
+    applyTheme(themeMode);
+
+    // Listen to system changes only in system mode
+    const mql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    const onSystemChange = () => {
+      if ((localStorage.getItem('admin_theme') || 'system') === 'system') {
+        applyTheme('system');
+      }
+    };
+    mql && mql.addEventListener && mql.addEventListener('change', onSystemChange);
+
+    // Sync across tabs/windows
+    const onStorage = (e) => {
+      if (e.key === 'admin_theme') {
+        const next = e.newValue || 'system';
+        setThemeMode(next);
+        applyTheme(next);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+
+    return () => {
+      mql && mql.removeEventListener && mql.removeEventListener('change', onSystemChange);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [themeMode]);
 
   const handleOpenAppointmentModal = () => {
     setIsAppointmentModalOpen(true);
@@ -129,6 +172,7 @@ function AppContent() {
           <Route path="/logout" element={<LogoutPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-token" element={<ResetTokenPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/logout" element={<AdminLogout />} />

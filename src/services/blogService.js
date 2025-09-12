@@ -64,7 +64,32 @@ export const blogService = {
       }
 
       const data = await response.json();
-      return data.blogs || [];
+      console.log('Raw API response:', data);
+      
+      // Handle different possible response structures
+      let blogs = [];
+      if (data.blogs && Array.isArray(data.blogs)) {
+        blogs = data.blogs;
+      } else if (Array.isArray(data)) {
+        blogs = data;
+      } else if (data.results && Array.isArray(data.results)) {
+        blogs = data.results;
+      }
+      
+      // Transform blog objects if they have nested structure
+      return blogs.map(blogItem => {
+        // If the blog data is nested in a 'blog' property, extract it
+        if (blogItem.blog && typeof blogItem.blog === 'object') {
+          return {
+            ...blogItem.blog,
+            id: blogItem.id || blogItem.blog.id,
+            timestamp: blogItem.timestamp || blogItem.blog.timestamp,
+            owner: blogItem.owner || blogItem.blog.owner,
+            owner_username: blogItem.owner_username || blogItem.blog.owner_username
+          };
+        }
+        return blogItem;
+      });
     } catch (error) {
       console.error('Error fetching blogs:', error);
       throw error;
@@ -90,6 +115,52 @@ export const blogService = {
       return data.blog;
     } catch (error) {
       console.error('Error fetching blog details:', error);
+      throw error;
+    }
+  },
+
+  // Get comments for a blog (public if available; falls back to [])
+  getComments: async (blogId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/blogs/blog-comments/${blogId}/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      // Normalize to array of comments
+      return Array.isArray(data?.comments) ? data.comments : Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.warn('Falling back to no comments due to error:', error);
+      return [];
+    }
+  },
+
+  // Add a comment to a blog (auth required)
+  addComment: async (blogId, bodyText) => {
+    try {
+      const token = getAuthToken();
+      if (!token) throw new Error('Authentication required. Please log in.');
+      const res = await fetch(`${API_BASE_URL}/blogs/add-comment/${blogId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify({ body: bodyText })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    } catch (error) {
+      console.error('Error adding comment:', error);
       throw error;
     }
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FaUsers, 
   FaRegNewspaper, 
@@ -35,7 +35,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-    // Set up polling to check for new data every 5 minutes
     const interval = setInterval(fetchDashboardData, 300000);
     return () => clearInterval(interval);
   }, []);
@@ -45,18 +44,19 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch blogs
-      const blogsData = await blogService.getAllBlogs();
-      setBlogs(blogsData.slice(0, 5)); // Latest 5 blogs
+      const [blogsData, usersResponse] = await Promise.all([
+        blogService.getAllBlogs(),
+        (async () => {
+          try { return await apiService.users.getAllUsers(); } catch (e) { return e; }
+        })()
+      ]);
+      setBlogs((Array.isArray(blogsData) ? blogsData : []).slice(0, 5));
 
-      // Fetch real user data
+      // Users
       let totalUsers = 0;
       let newUsersToday = 0;
-      
-      try {
-        const usersResponse = await apiService.users.getAllUsers();
+      if (usersResponse && !usersResponse.isAxiosError && !usersResponse.message) {
         console.log('Dashboard - Users API Response:', usersResponse);
-        
         if (usersResponse && Array.isArray(usersResponse)) {
           totalUsers = usersResponse.length;
           
@@ -79,10 +79,9 @@ const Dashboard = () => {
             return userDate >= yesterday;
           }).length;
         }
-        
         console.log(`Dashboard - Total users: ${totalUsers}, New today: ${newUsersToday}`);
-      } catch (userError) {
-        console.error('Error fetching users in dashboard:', userError);
+      } else {
+        console.error('Error fetching users in dashboard:', usersResponse);
         // Fallback to stored data if API fails
         const storedUsers = localStorage.getItem('adminUsers') || '[]';
         totalUsers = JSON.parse(storedUsers).length;
@@ -130,9 +129,12 @@ const Dashboard = () => {
       let totalOrders = 0;
       let ordersToday = 0;
       let totalRevenue = 0;
-      try {
-        // Try to get all orders (admin)
-        const ordersRes = await apiService.store.getAllOrders();
+      const [ordersRes, txRes] = await Promise.all([
+        (async () => { try { return await apiService.store.getAllOrders(); } catch (e) { return e; } })(),
+        (async () => { try { return await apiService.payments.getAllTransactions(); } catch (e) { return e; } })()
+      ]);
+
+      if (ordersRes && !ordersRes.isAxiosError && !ordersRes.message) {
         const ordersList = Array.isArray(ordersRes) ? ordersRes : (ordersRes?.orders || ordersRes?.data || []);
         totalOrders = ordersList.length;
         const startOfDay = new Date();
@@ -141,13 +143,11 @@ const Dashboard = () => {
           const d = new Date(o.created_at || o.date || o.created);
           return !isNaN(d) && d >= startOfDay;
         }).length;
-      } catch (e) {
+      } else {
         console.warn('Orders fetch failed; using 0');
       }
 
-      try {
-        // Try to get all transactions and sum successful amounts
-        const txRes = await apiService.payments.getAllTransactions();
+      if (txRes && !txRes.isAxiosError && !txRes.message) {
         const txList = Array.isArray(txRes) ? txRes : (txRes?.transactions || txRes?.data || []);
         totalRevenue = txList.reduce((sum, t) => {
           const status = (t.status || t.result_code || '').toString().toLowerCase();
@@ -155,7 +155,7 @@ const Dashboard = () => {
           const amount = Number(t.amount ?? t.Amount ?? t.total ?? 0) || 0;
           return ok ? sum + amount : sum;
         }, 0);
-      } catch (e) {
+      } else {
         console.warn('Transactions fetch failed; using 0 revenue');
       }
 
@@ -262,15 +262,7 @@ const Dashboard = () => {
     { title: 'System Settings', icon: <FaCogs />, action: 'settings', color: '#8b5cf6' }
   ];
 
-  if (loading) {
-    return (
-      <div className="p-4">
-        <div className="grid place-items-center rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-          <LoadingDots text="Loading dashboard..." size="large" />
-        </div>
-      </div>
-    );
-  }
+  // Do not block render on loading; show content immediately.
 
   if (error) {
     return (

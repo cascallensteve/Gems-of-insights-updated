@@ -81,6 +81,10 @@ const Hero = () => {
       case 'Book Now':
         navigate('/consultation');
         break;
+      case 'Join  our weeklyclasses':
+      case 'Register Here':
+        navigate('/courses');
+        break;
       default:
         navigate('/shop');
     }

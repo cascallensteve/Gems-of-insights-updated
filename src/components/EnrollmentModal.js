@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUser, FaEnvelope, FaPhone, FaSpinner, FaTimes, FaGraduationCap } from 'react-icons/fa';
 import apiService from '../services/api';
 import './EnrollmentModal.css';
+import { useAuth } from '../context/AuthContext';
 
 const EnrollmentModal = ({ course, isOpen, onClose, onEnrollmentSuccess }) => {
+  const { currentUser } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,6 +17,23 @@ const EnrollmentModal = ({ course, isOpen, onClose, onEnrollmentSuccess }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const formatPhoneTo254 = (input) => {
+    const raw = String(input || '').trim();
+    if (!raw) return '';
+    // Normalize to 2547XXXXXXXX format
+    if (raw.startsWith('+')) {
+      const r = raw.replace(/^\+/, '');
+      if (r.startsWith('254')) return r;
+      if (r.startsWith('07')) return `254${r.slice(1)}`;
+      if (r.startsWith('7') && r.length === 9) return `254${r}`;
+      return r;
+    }
+    if (raw.startsWith('254')) return raw;
+    if (raw.startsWith('07')) return `254${raw.slice(1)}`;
+    if (raw.startsWith('7') && raw.length === 9) return `254${raw}`;
+    return raw;
   };
 
   const showMessage = (type, text) => {
@@ -78,6 +97,46 @@ const EnrollmentModal = ({ course, isOpen, onClose, onEnrollmentSuccess }) => {
       
       allEnrollments.push(enrollmentData);
       localStorage.setItem('courseEnrollments', JSON.stringify(allEnrollments));
+
+      // Initiate payment immediately after enrollment
+      const amountCents = Number(course?.cost || 0);
+      const amountKes = Math.round(amountCents / 100);
+      const phone254 = formatPhoneTo254(formData.phone);
+      try {
+        const payRes = await apiService.payments.initiateEnrollmentPayment({
+          enrollmentId: enrollmentData.enrollment_id,
+          amount: amountKes || 1,
+          phone: phone254,
+          productType: 'course'
+        });
+
+        // Persist a minimal payment record for admin view
+        const paymentRecord = {
+          id: Date.now(),
+          enrollment_id: enrollmentData.enrollment_id,
+          course_id: course.id,
+          amount: amountKes || 1,
+          phone: phone254,
+          checkout_request_id: payRes.checkout_request_id,
+          merchant_request_id: payRes.merchant_request_id,
+          response_code: payRes.response_code,
+          success: payRes.success === true,
+          created_at: new Date().toISOString(),
+          status: payRes.success ? 'pending' : 'failed'
+        };
+        const existingTx = JSON.parse(localStorage.getItem('coursePayments') || '[]');
+        existingTx.push(paymentRecord);
+        localStorage.setItem('coursePayments', JSON.stringify(existingTx));
+
+        if (payRes.success) {
+          showMessage('success', 'Payment initiated. Check your phone to complete the STK push.');
+        } else {
+          showMessage('error', 'Payment initiation failed. Please try again.');
+        }
+      } catch (payErr) {
+        console.error('Payment initiation error:', payErr);
+        showMessage('error', 'Could not initiate payment. Please try again later.');
+      }
       
       console.log('Stored enrollment data from modal:', enrollmentData);
       
@@ -90,11 +149,11 @@ const EnrollmentModal = ({ course, isOpen, onClose, onEnrollmentSuccess }) => {
         });
       }
       
-      // Reset form after 2 seconds and close modal
+      // Keep modal open a bit to show payment status
       setTimeout(() => {
         resetForm();
         onClose();
-      }, 2000);
+      }, 3000);
       
     } catch (error) {
       console.error('Enrollment error:', error);
@@ -103,6 +162,18 @@ const EnrollmentModal = ({ course, isOpen, onClose, onEnrollmentSuccess }) => {
       setLoading(false);
     }
   };
+
+  // Prefill from logged-in user when modal opens
+  useEffect(() => {
+    if (isOpen && currentUser) {
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || `${currentUser.firstName || currentUser.first_name || ''} ${currentUser.lastName || currentUser.last_name || ''}`.trim(),
+        email: prev.email || currentUser.email || '',
+        phone: prev.phone || currentUser.phone || currentUser.phone_number || ''
+      }));
+    }
+  }, [isOpen, currentUser]);
 
   const handleClose = () => {
     resetForm();

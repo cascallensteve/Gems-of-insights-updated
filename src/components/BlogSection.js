@@ -25,28 +25,48 @@ const BlogSection = () => {
       setLoading(true);
       
       const blogs = await blogService.getAllBlogs();
+      console.log('BlogSection: Received blogs:', blogs);
       
       // Ensure blogs is an array
       if (!Array.isArray(blogs)) {
+        console.error('BlogSection: Invalid blogs data received:', blogs);
         throw new Error('Invalid blogs data received');
       }
       
-      // Transform and get latest 3 blogs
-      const transformedBlogs = blogs
-        .slice(0, 3)
-        .map(blog => ({
-          id: blog.id || Math.random().toString(36),
-          title: blog.title || 'Untitled Post',
-          excerpt: blog.description || 'No description available',
-          image: blog.photo || getRandomImage(),
-          date: blogService.formatTimestamp(blog.timestamp),
-          author: blogService.getAuthorName(blog.author),
-          category: getCategoryFromTags(blog.tags || []),
-          readTime: blog.read_time || '5 min read',
-          likes: blog.likes || 0,
-          isLiked: blog.isLiked || false
-        }));
+      // Filter out any invalid blog objects and transform
+      const validBlogs = blogs.filter(blog => {
+        if (!blog || typeof blog !== 'object') {
+          console.warn('BlogSection: Invalid blog object:', blog);
+          return false;
+        }
+        return true;
+      });
       
+      // Transform and get latest 3 blogs
+      const transformedBlogs = validBlogs
+        .slice(0, 3)
+        .map(blog => {
+          try {
+            return {
+              id: blog.id || Math.random().toString(36),
+              title: blog.title || 'Untitled Post',
+              excerpt: blog.description || 'No description available',
+              image: blog.photo || getRandomImage(),
+              date: blogService.formatTimestamp(blog.timestamp),
+              author: blogService.getAuthorName(blog.author),
+              category: getCategoryFromTags(blog.tags || []),
+              readTime: blog.read_time || '5 min read',
+              likes: Array.isArray(blog.likes) ? blog.likes.length : (Number(blog.likes) || 0),
+              isLiked: blog.isLiked || false
+            };
+          } catch (transformError) {
+            console.error('BlogSection: Error transforming blog:', blog, transformError);
+            return null;
+          }
+        })
+        .filter(blog => blog !== null); // Remove any failed transformations
+      
+      console.log('BlogSection: Transformed blogs:', transformedBlogs);
       setBlogPosts(transformedBlogs);
     } catch (error) {
       console.error('Error fetching latest blogs:', error);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { useNavigate } from 'react-router-dom';
  
 
 const AboutPage = () => {
@@ -44,6 +45,19 @@ const AboutPage = () => {
   const [heroRef, heroInView] = useInView({ threshold: 0.1, triggerOnce: true });
   const [aboutRef, aboutInView] = useInView({ threshold: 0.1, triggerOnce: true });
   const [statsRef, statsInView] = useInView({ threshold: 0.1, triggerOnce: true });
+
+  const navigate = useNavigate();
+
+  const handleDiscoverStory = () => {
+    const el = document.getElementById('about-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleViewProducts = () => {
+    navigate('/shop');
+  };
 
   const handleRegistrationChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -122,8 +136,18 @@ const AboutPage = () => {
               and holistic wellness solutions that transform lives and restore vitality.
             </motion.p>
             <motion.div className="mt-4 flex items-center gap-3" variants={fadeInUp}>
-              <button className="inline-flex items-center rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shadow hover:bg-emerald-500">Discover Our Story</button>
-              <button className="inline-flex items-center rounded-full border border-white/70 text-white px-5 py-2 text-sm font-semibold hover:bg-white/10">View Products</button>
+              <button 
+                className="inline-flex items-center rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shadow hover:bg-emerald-500"
+                onClick={handleDiscoverStory}
+              >
+                Discover Our Story
+              </button>
+              <button 
+                className="inline-flex items-center rounded-full border border-white/70 text-white px-5 py-2 text-sm font-semibold hover:bg-white/10"
+                onClick={handleViewProducts}
+              >
+                View Products
+              </button>
             </motion.div>
           </div>
         </div>
@@ -132,6 +156,7 @@ const AboutPage = () => {
       {/* About Lupinus Group Section */}
       <motion.section 
         ref={aboutRef}
+        id="about-section"
         className="py-12 bg-white"
         initial="hidden"
         animate={aboutInView ? "visible" : "hidden"}
@@ -195,246 +220,252 @@ const AboutPage = () => {
         </div>
       </motion.section>
 
-      {/* Medical Missionary Training Section */}
+      {/* Medical Missionary Training Section (modern design) */}
       <motion.section 
-        className="training-section"
+        className="py-12 bg-white"
         initial="hidden"
         animate="visible"
         variants={staggerContainer}
       >
-        <div className="container">
-          <motion.div className="section-header text-center" variants={fadeInUp}>
-            <h2>Gospel Medical Missionary Training</h2>
-            <p>Equipping individuals with the knowledge and skills to serve others through natural health ministry</p>
+        <div className="max-w-7xl mx-auto px-4">
+          <motion.div className="text-center" variants={fadeInUp}>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Gospel Medical Missionary Training</h2>
+            <p className="mt-2 text-gray-700">Equipping individuals with the knowledge and skills to serve others through natural health ministry</p>
           </motion.div>
 
-          <motion.div className="training-content" variants={fadeInUp}>
-            <div className="training-quote">
-              <blockquote>
-                "Medical missionary work brings to humanity the gospel of release from suffering. 
-                It is the pioneer work of the gospel. It is the gospel practiced, the compassion of Christ revealed."
+          <motion.div className="mt-8 grid gap-6 md:grid-cols-2 items-start" variants={fadeInUp}>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-5">
+              <blockquote className="text-gray-800 italic leading-relaxed">
+                "Medical missionary work brings to humanity the gospel of release from suffering. It is the pioneer work of the gospel. It is the gospel practiced, the compassion of Christ revealed."
               </blockquote>
-              <cite>- MM 239.3</cite>
+              <cite className="mt-2 block text-sm text-gray-500">- MM 239.3</cite>
             </div>
 
-            <div className="modules-section">
-              <h3>Training Modules</h3>
-              <div className="modules-grid">
-                <motion.div className="module-card" variants={fadeInUp}>
-                  <div className="module-header">
-                    <span className="module-number">01</span>
-                    <h4>Essentials of Applied Clinical Nutrition</h4>
+            <div className="rounded-lg border border-gray-200 bg-white p-5">
+              <h3 className="text-lg font-semibold text-gray-900">Training Modules</h3>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <motion.div className="rounded-md border border-gray-200 bg-gray-50 p-4" variants={fadeInUp}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-xs font-semibold text-emerald-700">01</div>
+                      <h4 className="mt-1 text-sm font-bold text-gray-900">Essentials of Applied Clinical Nutrition</h4>
+                    </div>
+                    <div className="text-right text-xs text-gray-600">
+                      <div>1 Month</div>
+                      <div className="font-semibold">KSh 10,000</div>
+                    </div>
                   </div>
-                  <div className="module-details">
-                    <span className="duration">1 Month</span>
-                    <span className="price">KSh 10,000</span>
-                  </div>
-                  <p>Foundation principles of nutrition and therapeutic dietary approaches</p>
+                  <p className="mt-2 text-sm text-gray-700">Foundation principles of nutrition and therapeutic dietary approaches</p>
                 </motion.div>
-                
-                <motion.div className="module-card" variants={fadeInUp}>
-                  <div className="module-header">
-                    <span className="module-number">02</span>
-                    <h4>Human Anatomy, Physiology & Clinical Pathology</h4>
+
+                <motion.div className="rounded-md border border-gray-200 bg-gray-50 p-4" variants={fadeInUp}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-xs font-semibold text-emerald-700">02</div>
+                      <h4 className="mt-1 text-sm font-bold text-gray-900">Human Anatomy, Physiology & Clinical Pathology</h4>
+                    </div>
+                    <div className="text-right text-xs text-gray-600">
+                      <div>4 Months</div>
+                      <div className="font-semibold">KSh 30,000</div>
+                    </div>
                   </div>
-                  <div className="module-details">
-                    <span className="duration">4 Months</span>
-                    <span className="price">KSh 30,000</span>
-                  </div>
-                  <p>Comprehensive understanding of human body systems and disease processes</p>
+                  <p className="mt-2 text-sm text-gray-700">Comprehensive understanding of human body systems and disease processes</p>
                 </motion.div>
-                
-                <motion.div className="module-card" variants={fadeInUp}>
-                  <div className="module-header">
-                    <span className="module-number">03</span>
-                    <h4>Herbology and Botanical Medicine</h4>
+
+                <motion.div className="rounded-md border border-gray-200 bg-gray-50 p-4 sm:col-span-2" variants={fadeInUp}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-xs font-semibold text-emerald-700">03</div>
+                      <h4 className="mt-1 text-sm font-bold text-gray-900">Herbology and Botanical Medicine</h4>
+                    </div>
+                    <div className="text-right text-xs text-gray-600">
+                      <div>2 Months</div>
+                      <div className="font-semibold">KSh 20,000</div>
+                    </div>
                   </div>
-                  <div className="module-details">
-                    <span className="duration">2 Months</span>
-                    <span className="price">KSh 20,000</span>
-                  </div>
-                  <p>Traditional and modern applications of medicinal plants and herbs</p>
+                  <p className="mt-2 text-sm text-gray-700">Traditional and modern applications of medicinal plants and herbs</p>
                 </motion.div>
               </div>
-              
-              <div className="total-investment">
-                <h4>Total Investment: KSh 60,000</h4>
+
+              <div className="mt-4 rounded-md bg-emerald-50 p-3 text-sm text-emerald-800">
+                <strong>Total Investment:</strong> KSh 60,000
               </div>
             </div>
+          </motion.div>
 
-            <motion.div className="registration-cta" variants={fadeInUp}>
-              <button 
-                className="btn-primary btn-large"
-                onClick={() => setShowRegistrationForm(!showRegistrationForm)}
-              >
-                {showRegistrationForm ? 'Hide Registration Form' : 'Start Your Journey Today'}
-              </button>
-            </motion.div>
+          <motion.div className="mt-8 text-center" variants={fadeInUp}>
+            <button 
+              className="inline-flex items-center rounded-md bg-emerald-700 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-600"
+              onClick={() => setShowRegistrationForm(!showRegistrationForm)}
+            >
+              {showRegistrationForm ? 'Hide Registration Form' : 'Start Your Journey Today'}
+            </button>
+          </motion.div>
 
-            {showRegistrationForm && (
-              <motion.div 
-                className="registration-form-section"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                transition={{ duration: 0.5 }}
-              >
-                <h3>Registration Form</h3>
-                <form onSubmit={handleRegistrationSubmit} className="registration-form">
-                  <div className="form-section">
-                    <h4>Personal Information</h4>
-                    
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>First Name *</label>
-                        <input
-                          type="text"
-                          name="firstName"
-                          value={registrationData.firstName}
-                          onChange={handleRegistrationChange}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="form-group">
-                        <label>Other Names</label>
-                        <input
-                          type="text"
-                          name="otherNames"
-                          value={registrationData.otherNames}
-                          onChange={handleRegistrationChange}
-                        />
-                      </div>
+          {showRegistrationForm && (
+            <motion.div 
+              className="mt-6 rounded-lg border border-gray-200 bg-white p-5"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              transition={{ duration: 0.5 }}
+            >
+              <h3 className="text-lg font-semibold text-gray-900">Registration Form</h3>
+              <form onSubmit={handleRegistrationSubmit} className="mt-4 grid gap-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-800">Personal Information</h4>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-xs text-gray-600">First Name *</label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={registrationData.firstName}
+                        onChange={handleRegistrationChange}
+                        required
+                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      />
                     </div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Gender *</label>
-                        <select
-                          name="gender"
-                          value={registrationData.gender}
-                          onChange={handleRegistrationChange}
-                          required
-                        >
-                          <option value="">Select Gender</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                        </select>
-                      </div>
-                      
-                      <div className="form-group">
-                        <label>Year of Birth *</label>
-                        <input
-                          type="number"
-                          name="yearOfBirth"
-                          value={registrationData.yearOfBirth}
-                          onChange={handleRegistrationChange}
-                          min="1920"
-                          max="2010"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Email Address *</label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={registrationData.email}
-                          onChange={handleRegistrationChange}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="form-group">
-                        <label>Phone Number *</label>
-                        <input
-                          type="tel"
-                          name="phoneNumber"
-                          value={registrationData.phoneNumber}
-                          onChange={handleRegistrationChange}
-                          placeholder="+254..."
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>City *</label>
-                        <input
-                          type="text"
-                          name="city"
-                          value={registrationData.city}
-                          onChange={handleRegistrationChange}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="form-group">
-                        <label>Country *</label>
-                        <input
-                          type="text"
-                          name="country"
-                          value={registrationData.country}
-                          onChange={handleRegistrationChange}
-                          required
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-xs text-gray-600">Other Names</label>
+                      <input
+                        type="text"
+                        name="otherNames"
+                        value={registrationData.otherNames}
+                        onChange={handleRegistrationChange}
+                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      />
                     </div>
                   </div>
 
-                  <div className="form-section">
-                    <h4>Select Modules of Interest *</h4>
-                    <div className="module-selection">
-                      <label className="checkbox-label">
-                        <input
-                          type="checkbox"
-                          name="selectedModules"
-                          value="Module One - Essentials of Applied Clinical Nutrition"
-                          checked={registrationData.selectedModules.includes('Module One - Essentials of Applied Clinical Nutrition')}
-                          onChange={handleRegistrationChange}
-                        />
-                        <span className="checkmark"></span>
-                        Module One - Essentials of Applied Clinical Nutrition (KSh 10,000)
-                      </label>
-                      
-                      <label className="checkbox-label">
-                        <input
-                          type="checkbox"
-                          name="selectedModules"
-                          value="Module Two - Fundamentals of Human Anatomy, Physiology & Clinical Pathology"
-                          checked={registrationData.selectedModules.includes('Module Two - Fundamentals of Human Anatomy, Physiology & Clinical Pathology')}
-                          onChange={handleRegistrationChange}
-                        />
-                        <span className="checkmark"></span>
-                        Module Two - Human Anatomy, Physiology & Clinical Pathology (KSh 30,000)
-                      </label>
-                      
-                      <label className="checkbox-label">
-                        <input
-                          type="checkbox"
-                          name="selectedModules"
-                          value="Module Three - Herbology and Botanical Medicine"
-                          checked={registrationData.selectedModules.includes('Module Three - Herbology and Botanical Medicine')}
-                          onChange={handleRegistrationChange}
-                        />
-                        <span className="checkmark"></span>
-                        Module Three - Herbology and Botanical Medicine (KSh 20,000)
-                      </label>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-xs text-gray-600">Gender *</label>
+                      <select
+                        name="gender"
+                        value={registrationData.gender}
+                        onChange={handleRegistrationChange}
+                        required
+                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600">Year of Birth *</label>
+                      <input
+                        type="number"
+                        name="yearOfBirth"
+                        value={registrationData.yearOfBirth}
+                        onChange={handleRegistrationChange}
+                        min="1920"
+                        max="2010"
+                        required
+                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      />
                     </div>
                   </div>
 
-                  <button type="submit" className="btn-primary btn-large">
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-xs text-gray-600">Email Address *</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={registrationData.email}
+                        onChange={handleRegistrationChange}
+                        required
+                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600">Phone Number *</label>
+                      <input
+                        type="tel"
+                        name="phoneNumber"
+                        value={registrationData.phoneNumber}
+                        onChange={handleRegistrationChange}
+                        placeholder="+254..."
+                        required
+                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-xs text-gray-600">City *</label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={registrationData.city}
+                        onChange={handleRegistrationChange}
+                        required
+                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600">Country *</label>
+                      <input
+                        type="text"
+                        name="country"
+                        value={registrationData.country}
+                        onChange={handleRegistrationChange}
+                        required
+                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-800">Select Modules of Interest *</h4>
+                  <div className="mt-3 grid gap-2">
+                    <label className="flex items-start gap-2 text-sm text-gray-800">
+                      <input
+                        type="checkbox"
+                        name="selectedModules"
+                        value="Module One - Essentials of Applied Clinical Nutrition"
+                        checked={registrationData.selectedModules.includes('Module One - Essentials of Applied Clinical Nutrition')}
+                        onChange={handleRegistrationChange}
+                        className="mt-1"
+                      />
+                      <span>Module One - Essentials of Applied Clinical Nutrition (KSh 10,000)</span>
+                    </label>
+                    <label className="flex items-start gap-2 text-sm text-gray-800">
+                      <input
+                        type="checkbox"
+                        name="selectedModules"
+                        value="Module Two - Fundamentals of Human Anatomy, Physiology & Clinical Pathology"
+                        checked={registrationData.selectedModules.includes('Module Two - Fundamentals of Human Anatomy, Physiology & Clinical Pathology')}
+                        onChange={handleRegistrationChange}
+                        className="mt-1"
+                      />
+                      <span>Module Two - Human Anatomy, Physiology & Clinical Pathology (KSh 30,000)</span>
+                    </label>
+                    <label className="flex items-start gap-2 text-sm text-gray-800">
+                      <input
+                        type="checkbox"
+                        name="selectedModules"
+                        value="Module Three - Herbology and Botanical Medicine"
+                        checked={registrationData.selectedModules.includes('Module Three - Herbology and Botanical Medicine')}
+                        onChange={handleRegistrationChange}
+                        className="mt-1"
+                      />
+                      <span>Module Three - Herbology and Botanical Medicine (KSh 20,000)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button type="submit" className="inline-flex items-center rounded-md bg-emerald-700 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-600">
                     Submit Registration
                   </button>
-                </form>
-              </motion.div>
-            )}
-
-            
-          </motion.div>
+                </div>
+              </form>
+            </motion.div>
+          )}
         </div>
       </motion.section>
 

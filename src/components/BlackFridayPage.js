@@ -81,7 +81,7 @@ const BlackFridayPage = () => {
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition"/>
                 <div className="absolute bottom-2 right-2 flex gap-2">
                   <button className="inline-flex items-center justify-center rounded-full bg-white/90 text-gray-800 w-8 h-8 shadow hover:bg-white" title="Quick view" onClick={() => handleQuickView(product)}><HiEye /></button>
-                  <button className="inline-flex items-center justify-center rounded-full bg-emerald-600 text-white w-9 h-9 shadow hover:bg-emerald-700" title="Add to cart" onClick={() => handleAddToCart(product)}><HiPlus /></button>
+                  {/* Removed floating add-to-cart icon to avoid duplication; main button is below */}
                 </div>
               </div>
               <div className="p-3">
@@ -94,8 +94,9 @@ const BlackFridayPage = () => {
                   <span className="text-base font-semibold text-gray-900">KSH {product.price}</span>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <button className="inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-3 py-1.5 text-sm font-medium shadow hover:bg-emerald-600" onClick={() => handleProductView(product)}>Full Details</button>
+                  <button className="inline-flex items-center justify-center rounded-md bg-emerald-700 text-white px-3 py-1.5 text-sm font-medium shadow hover:bg-emerald-600" onClick={() => handleAddToCart(product)}>Add to Cart</button>
                   <button className="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" onClick={() => handleQuickView(product)}>Quick View</button>
+                  <button className="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" onClick={() => handleProductView(product)}>Full Details</button>
                 </div>
               </div>
             </div>

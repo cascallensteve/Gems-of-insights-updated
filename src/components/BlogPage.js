@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { blogService } from '../services/blogService';
+import { newsletterService } from '../services/newsletterService';
 import LoadingDots from './LoadingDots';
 import LikeButton from './LikeButton';
 // Tailwind conversion: removed external CSS import
@@ -13,6 +14,9 @@ const BlogPage = () => {
   const [comments, setComments] = useState({});
   const [newComments, setNewComments] = useState({});
   const [submittingComments, setSubmittingComments] = useState({});
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [subscribeLoading, setSubscribeLoading] = useState(false);
+  const [subscribeMessage, setSubscribeMessage] = useState(null);
 
   // Fetch blogs on component mount
   useEffect(() => {
@@ -30,24 +34,37 @@ const BlogPage = () => {
           throw new Error('Invalid blogs data received from API');
         }
         
-        // Transform API data to match component expectations
-        const transformedBlogs = blogs.map((blog, index) => {
-          console.log(`BlogPage: Transforming blog ${index + 1}:`, blog.id, blog.title);
-          return {
-            id: blog.id,
-            title: blog.title,
-            excerpt: blog.description,
-            image: blog.photo || getRandomImage(),
-            category: getCategoryFromTags(blog.tags),
-            date: blog.timestamp,
-            author: blogService.getAuthorName(blog.author),
-            readTime: blog.read_time,
-            tags: blog.tags || [],
-            body: blog.body,
-            likes: blog.likes || 0,
-            isLiked: blog.isLiked || false
-          };
+        // Filter out invalid blog objects and transform API data
+        const validBlogs = blogs.filter(blog => {
+          if (!blog || typeof blog !== 'object') {
+            console.warn('BlogPage: Invalid blog object:', blog);
+            return false;
+          }
+          return true;
         });
+        
+        const transformedBlogs = validBlogs.map((blog, index) => {
+          try {
+            console.log(`BlogPage: Transforming blog ${index + 1}:`, blog.id, blog.title);
+            return {
+              id: blog.id,
+              title: blog.title,
+              excerpt: blog.description,
+              image: blog.photo || getRandomImage(),
+              category: getCategoryFromTags(blog.tags),
+              date: blog.timestamp,
+              author: blogService.getAuthorName(blog.author),
+              readTime: blog.read_time,
+              tags: blog.tags || [],
+              body: blog.body,
+              likes: Array.isArray(blog.likes) ? blog.likes.length : (Number(blog.likes) || 0),
+              isLiked: blog.isLiked || false
+            };
+          } catch (transformError) {
+            console.error('BlogPage: Error transforming blog:', blog, transformError);
+            return null;
+          }
+        }).filter(blog => blog !== null); // Remove any failed transformations
         
         console.log('BlogPage: Transformed blogs:', transformedBlogs?.length);
         setBlogPosts(transformedBlogs);
@@ -83,21 +100,25 @@ const BlogPage = () => {
     loadBlogPosts();
   }, []);
 
-  // Load comments for a specific blog post
+  // Load comments for a specific blog post (from backend so all users see them)
   const loadCommentsForBlog = async (blogId) => {
     try {
-      const storedComments = localStorage.getItem(`comments_${blogId}`);
-      if (storedComments) {
-        setComments(prev => ({
-          ...prev,
-          [blogId]: JSON.parse(storedComments)
-        }));
-      } else {
-        setComments(prev => ({
-          ...prev,
-          [blogId]: []
-        }));
-      }
+      const apiComments = await blogService.getComments(blogId);
+      const normalized = Array.isArray(apiComments)
+        ? apiComments.map(c => ({
+            id: c.id,
+            postId: blogId,
+            author: c.owner_username || 'User',
+            content: c.body || c.content || '',
+            timestamp: c.timestamp,
+            likes: 0,
+            replies: []
+          }))
+        : [];
+      setComments(prev => ({
+        ...prev,
+        [blogId]: normalized
+      }));
     } catch (error) {
       console.error('Error loading comments for blog:', blogId, error);
       setComments(prev => ({
@@ -107,7 +128,7 @@ const BlogPage = () => {
     }
   };
 
-  // Handle comment submission
+  // Handle comment submission (post to backend so comments are shared)
   const handleSubmitComment = async (blogId, e) => {
     e.preventDefault();
     
@@ -120,33 +141,31 @@ const BlogPage = () => {
     try {
       setSubmittingComments(prev => ({ ...prev, [blogId]: true }));
       
-      // Create new comment object
-      const comment = {
-        id: Date.now(),
+      // Post to backend
+      const res = await blogService.addComment(blogId, commentText.trim());
+      const c = res?.comment || {};
+      const created = {
+        id: c.id || Date.now(),
         postId: blogId,
-        author: 'Anonymous User', // In a real app, get from user context
-        content: commentText.trim(),
-        timestamp: new Date().toISOString(),
+        author: c.owner_username || 'You',
+        content: c.body || commentText.trim(),
+        timestamp: c.timestamp || new Date().toISOString(),
         likes: 0,
         replies: []
       };
 
-      // Add comment to state
-      const updatedComments = [comment, ...(comments[blogId] || [])];
+      // Update local state optimistically
       setComments(prev => ({
         ...prev,
-        [blogId]: updatedComments
+        [blogId]: [created, ...(prev[blogId] || [])]
       }));
 
       // Clear the input
       setNewComments(prev => ({ ...prev, [blogId]: '' }));
-
-      // Save to localStorage (in real app, save to API)
-      localStorage.setItem(`comments_${blogId}`, JSON.stringify(updatedComments));
       
     } catch (error) {
       console.error('Error submitting comment:', error);
-      alert('Failed to post comment. Please try again.');
+      alert('Failed to post comment. Please ensure you are logged in, then try again.');
     } finally {
       setSubmittingComments(prev => ({ ...prev, [blogId]: false }));
     }
@@ -183,7 +202,7 @@ const BlogPage = () => {
         readTime: blog.read_time,
         tags: blog.tags || [],
         body: blog.body,
-        likes: blog.likes || 0,
+        likes: Array.isArray(blog.likes) ? blog.likes.length : (Number(blog.likes) || 0),
         isLiked: blog.isLiked || false
       }));
       
@@ -245,9 +264,13 @@ const BlogPage = () => {
 
   const filteredPosts = blogPosts.filter(post => {
     const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const q = (searchTerm || '').trim().toLowerCase();
+    if (!q) return matchesCategory;
+    const title = (post.title || '').toLowerCase();
+    const excerpt = (post.excerpt || '').toLowerCase();
+    const body = (post.body || '').toLowerCase();
+    const tagHit = Array.isArray(post.tags) && post.tags.some(tag => (tag || '').toLowerCase().includes(q));
+    const matchesSearch = title.includes(q) || excerpt.includes(q) || body.includes(q) || tagHit;
     return matchesCategory && matchesSearch;
   });
 
@@ -263,6 +286,25 @@ const BlogPage = () => {
   const handleReadFullPost = (post) => {
     // Navigate to the blog post view
     window.location.href = `/blog/${post.id}`;
+  };
+
+  // Newsletter subscribe handler
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!subscribeEmail) return;
+    setSubscribeLoading(true);
+    setSubscribeMessage(null);
+    try {
+      const res = await newsletterService.subscribe(subscribeEmail.trim());
+      setSubscribeMessage({ type: 'success', text: res?.message || 'Subscribed successfully!' });
+      setSubscribeEmail('');
+    } catch (err) {
+      const msg = typeof err === 'string' ? err : err?.message || 'Subscription failed. Please try again later.';
+      setSubscribeMessage({ type: 'error', text: msg });
+    } finally {
+      setSubscribeLoading(false);
+      setTimeout(() => setSubscribeMessage(null), 6000);
+    }
   };
 
   // Enhanced loading component
@@ -306,7 +348,12 @@ const BlogPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full rounded-md border border-gray-300 pl-10 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200"
               />
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">🔍</span>
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+                  <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </span>
             </div>
             
             <div className="flex flex-wrap gap-2">
@@ -369,63 +416,7 @@ const BlogPage = () => {
           </div>
         )}
 
-        {/* Featured Post Comments Section */}
-        {!loading && !error && filteredPosts.length > 0 && (
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-              <h4 className="comments-title">Comments ({comments[filteredPosts[0].id]?.length || 0})</h4>
-              
-              {/* Add Comment Form */}
-              <form className="comment-form" onSubmit={(e) => handleSubmitComment(filteredPosts[0].id, e)}>
-                <div className="form-group">
-                  <textarea
-                    value={newComments[filteredPosts[0].id] || ''}
-                    onChange={(e) => handleCommentChange(filteredPosts[0].id, e.target.value)}
-                    placeholder="Share your thoughts on this article..."
-                    rows="3"
-                    required
-                  />
-                </div>
-                <button 
-                  type="submit" 
-                  className="submit-comment-btn"
-                  disabled={submittingComments[filteredPosts[0].id]}
-                >
-                  {submittingComments[filteredPosts[0].id] ? 'Posting...' : 'Post Comment'}
-                </button>
-              </form>
-
-              {/* Comments List */}
-              <div className="comments-list">
-                {comments[filteredPosts[0].id] && comments[filteredPosts[0].id].length > 0 ? (
-                  comments[filteredPosts[0].id].slice(0, 3).map(comment => (
-                    <div key={comment.id} className="comment">
-                      <div className="comment-header">
-                        <span className="comment-author">{comment.author}</span>
-                        <span className="comment-date">{formatDate(comment.timestamp)}</span>
-                      </div>
-                      <div className="comment-content">
-                        {comment.content}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="no-comments">
-                    <p>No comments yet. Be the first to share your thoughts!</p>
-                    </div>
-                )}
-                
-                {comments[filteredPosts[0].id] && comments[filteredPosts[0].id].length > 3 && (
-                  <div className="view-more-comments">
-                    <button className="view-more-btn">
-                      View all {comments[filteredPosts[0].id].length} comments
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Comments on list are hidden on Blog list view to show only after Read More */}
 
         {/* Blog Grid - Only show when not loading and no error */}
         {!loading && !error && (
@@ -473,59 +464,7 @@ const BlogPage = () => {
                 </div>
               </div>
 
-              {/* Comments Section */}
-              <div className="blog-comments-section">
-                <h4 className="comments-title">Comments ({comments[post.id]?.length || 0})</h4>
-                
-                {/* Add Comment Form */}
-                <form className="comment-form" onSubmit={(e) => handleSubmitComment(post.id, e)}>
-                  <div className="form-group">
-                    <textarea
-                      value={newComments[post.id] || ''}
-                      onChange={(e) => handleCommentChange(post.id, e.target.value)}
-                      placeholder="Share your thoughts on this article..."
-                      rows="3"
-                      required
-                    />
-                  </div>
-                  <button 
-                    type="submit" 
-                    className="submit-comment-btn"
-                    disabled={submittingComments[post.id]}
-                  >
-                    {submittingComments[post.id] ? 'Posting...' : 'Post Comment'}
-                  </button>
-                </form>
-
-                {/* Comments List */}
-                <div className="comments-list">
-                  {comments[post.id] && comments[post.id].length > 0 ? (
-                    comments[post.id].slice(0, 3).map(comment => (
-                      <div key={comment.id} className="comment">
-                        <div className="comment-header">
-                          <span className="comment-author">{comment.author}</span>
-                          <span className="comment-date">{formatDate(comment.timestamp)}</span>
-                        </div>
-                        <div className="comment-content">
-                          {comment.content}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="no-comments">
-                      <p>No comments yet. Be the first to share your thoughts!</p>
-                    </div>
-                  )}
-                  
-                  {comments[post.id] && comments[post.id].length > 3 && (
-                    <div className="view-more-comments">
-                      <button className="view-more-btn">
-                        View all {comments[post.id].length} comments
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* Comments hidden on list cards; available on full post page */}
             </article>
             ))}
           </div>
@@ -533,16 +472,34 @@ const BlogPage = () => {
 
         {/* Newsletter Signup */}
         <div className="mt-12 rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <form onSubmit={handleSubscribe} className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Stay Updated</h3>
               <p className="text-gray-700">Get the latest health tips and product updates delivered to your inbox</p>
             </div>
             <div className="flex w-full gap-2 sm:w-auto">
-              <input className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200" type="email" placeholder="Enter your email address" />
-              <button className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600" type="submit">Subscribe</button>
+              <input 
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-200" 
+                type="email" 
+                placeholder="Enter your email address" 
+                value={subscribeEmail}
+                onChange={(e) => setSubscribeEmail(e.target.value)}
+                required
+              />
+              <button 
+                className="inline-flex items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-60" 
+                type="submit"
+                disabled={subscribeLoading}
+              >
+                {subscribeLoading ? 'Subscribing...' : 'Subscribe'}
+              </button>
             </div>
+          </form>
+          {subscribeMessage && (
+            <div className={`mt-3 rounded-md px-3 py-2 text-sm ${subscribeMessage.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-100' : 'bg-red-50 text-red-800 border border-red-100'}`}>
+              {subscribeMessage.text}
           </div>
+          )}
         </div>
 
         {/* No Results - Only show when not loading and no error */}

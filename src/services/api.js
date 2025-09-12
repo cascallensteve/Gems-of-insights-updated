@@ -496,6 +496,31 @@ const apiService = {
       }
     },
 
+    // Initiate payment for a course enrollment using enrollment_id as path param
+    initiateEnrollmentPayment: async ({ enrollmentId, amount, phone, productType = 'course' }) => {
+      try {
+        const pk = encodeURIComponent(String(enrollmentId));
+        const payload = {
+          amount,
+          phone,
+          product_type: productType
+        };
+        const response = await api.post(`/payments/pay/${pk}/`, payload);
+        const data = response.data || {};
+
+        return {
+          success: Boolean(data.success) || data.response_code === '0' || data.responseCode === '0',
+          transaction_id: data.transaction_id || data.transactionId,
+          checkout_request_id: data.checkout_request_id || data.checkoutRequestId || data.CheckoutRequestID,
+          merchant_request_id: data.merchant_request_id || data.merchantRequestId || data.MerchantRequestID,
+          response_code: data.response_code || data.responseCode,
+          raw: data
+        };
+      } catch (error) {
+        throw error.response?.data || error.message;
+      }
+    },
+
     // Check payment transaction status via GET endpoint
     transactionStatus: async (checkoutRequestId) => {
       try {

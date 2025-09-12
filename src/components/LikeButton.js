@@ -2,8 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { blogService } from '../services/blogService';
 import './LikeButton.css';
 
+const normalizeLikes = (value) => {
+  if (Array.isArray(value)) return value.length;
+  if (typeof value === 'number' && isFinite(value)) return value;
+  if (value && typeof value === 'object') {
+    // Common API shapes
+    if (typeof value.count === 'number') return value.count;
+    if (typeof value.total === 'number') return value.total;
+    return 0;
+  }
+  const coerced = Number(value);
+  return isFinite(coerced) ? coerced : 0;
+};
+
 const LikeButton = ({ blogId, initialLikes = 0, initialIsLiked = false, size = 'medium' }) => {
-  const [likes, setLikes] = useState(initialLikes);
+  const [likes, setLikes] = useState(normalizeLikes(initialLikes));
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,7 +29,8 @@ const LikeButton = ({ blogId, initialLikes = 0, initialIsLiked = false, size = '
   useEffect(() => {
     // Skip automatic fetching to avoid CORS errors on page load
     // Like status will be fetched when user actually interacts with the button
-  }, [blogId]);
+    setLikes(normalizeLikes(initialLikes));
+  }, [blogId, initialLikes]);
 
   const handleLike = async () => {
     // For now, let's allow testing without authentication
@@ -48,7 +62,7 @@ const LikeButton = ({ blogId, initialLikes = 0, initialIsLiked = false, size = '
       setTimeout(async () => {
         try {
           const likeData = await blogService.getBlogLikes(blogId);
-          setLikes(likeData.likes);
+          setLikes(normalizeLikes(likeData.likes));
           // Don't update isLiked here to avoid flickering
         } catch (refreshError) {
           console.warn('Could not refresh like count:', refreshError);
@@ -88,8 +102,8 @@ const LikeButton = ({ blogId, initialLikes = 0, initialIsLiked = false, size = '
         disabled={isLoading}
         title={isLiked ? 'Unlike this post' : 'Like this post'}
       >
-        <span className="like-icon">
-          {isLiked ? '❤️' : '🤍'}
+        <span className="like-icon" aria-hidden="true">
+          {isLiked ? '❤️' : '❤'}
         </span>
         <span className="like-count">{likes || 0}</span>
       </button>

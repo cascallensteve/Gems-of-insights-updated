@@ -10,6 +10,7 @@ const AdminOrders = () => {
   const { currentUser } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewScope, setViewScope] = useState('all'); // 'all' | 'mine'
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -44,9 +45,15 @@ const AdminOrders = () => {
 
         let data;
         try {
-          console.log('🔄 Attempting to fetch all orders...');
-          const response = await api.get('/store/all-orders');
-          data = response.data;
+          if (viewScope === 'mine') {
+            console.log('🔄 Fetching my orders...');
+            const response = await api.get('/store/my-orders');
+            data = response.data?.orders || response.data || [];
+          } else {
+            console.log('🔄 Attempting to fetch all orders...');
+            const response = await api.get('/store/all-orders');
+            data = response.data;
+          }
           console.log('✅ Orders API request successful');
           console.log('📦 Orders received:', data);
         } catch (apiError) {
@@ -117,7 +124,7 @@ const AdminOrders = () => {
     };
 
     fetchOrders();
-  }, []);
+  }, [viewScope]);
 
   const calculateOrderTotal = (order) => {
     if (!order.items || !Array.isArray(order.items)) return 0;
@@ -489,13 +496,7 @@ const AdminOrders = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="admin-orders loading">
-        <LoadingDots text="Loading orders..." />
-      </div>
-    );
-  }
+  // No blocking loading state; render immediately.
 
   if (error && orders.length === 0) {
     return (
@@ -523,6 +524,10 @@ const AdminOrders = () => {
           <p>Manage customer orders and track shipments</p>
         </div>
         <div className="orders-header__right">
+          <div className="btn-group" role="group" aria-label="View scope">
+            <button className={`btn btn-secondary ${viewScope==='all' ? 'active' : ''}`} onClick={() => setViewScope('all')}>All</button>
+            <button className={`btn btn-secondary ${viewScope==='mine' ? 'active' : ''}`} onClick={() => setViewScope('mine')}>Mine</button>
+          </div>
           <button className="btn btn-secondary" onClick={() => window.location.reload()}>
             <FaSyncAlt /> Refresh
           </button>
@@ -767,11 +772,11 @@ const AdminOrders = () => {
           </tbody>
         </table>
         
-        {filteredOrders.length === 0 && !loading && (
+        {filteredOrders.length === 0 && (
           <div className="no-orders">
             <FaShoppingCart size={48} />
-            <h3>No orders found</h3>
-            <p>{error ? 'Unable to load orders. Please check your connection and try again.' : 'No orders match your current filters.'}</p>
+            <h3>{loading ? 'Loading...' : 'No orders found'}</h3>
+            <p>{loading ? 'Please wait while we fetch your orders.' : (error ? 'Unable to load orders. Please check your connection and try again.' : 'No orders match your current filters.')}</p>
             {error && (
               <button 
                 className="btn btn-primary"

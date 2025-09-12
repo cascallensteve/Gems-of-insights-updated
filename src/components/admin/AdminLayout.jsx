@@ -1,26 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { FaBell, FaBars, FaTimes } from 'react-icons/fa';
-import Dashboard from './Dashboard';
-import Users from './Users';
-import Settings from './Settings';
-import Sales from './Sales';
-import Analytics from './Analytics';
-import Products from './Products';
-import Orders from './Orders';
-import Courses from './Courses';
-import AdminBlogManager from '../AdminBlogManager';
-import AdminAppointments from './AdminAppointments';
-import AdminOrders from './AdminOrders';
-import AdminProducts from './AdminProducts';
 import AdminNavbar from './AdminNavbar';
 import { AnimatePresence, motion } from 'framer-motion';
-import Notifications from './Notifications';
 // Tailwind conversion: removed external CSS import
 // import './AdminLayout.css'; // legacy css removed
 import { useNotifications } from '../../context/NotificationContext';
 import AdminInquiries from './AdminInquiries';
 import Transactions from './Transactions';
+
+const Dashboard = lazy(() => import('./Dashboard'));
+const Users = lazy(() => import('./Users'));
+const Settings = lazy(() => import('./SettingsSimple'));
+const Sales = lazy(() => import('./Sales'));
+const Analytics = lazy(() => import('./Analytics'));
+const Products = lazy(() => import('./Products'));
+const Orders = lazy(() => import('./Orders'));
+const Courses = lazy(() => import('./Courses'));
+const AdminBlogManager = lazy(() => import('../AdminBlogManager'));
+const AdminAppointments = lazy(() => import('./AdminAppointments'));
+const AdminOrders = lazy(() => import('./AdminOrders'));
+const AdminProducts = lazy(() => import('./AdminProducts'));
+const Notifications = lazy(() => import('./Notifications'));
 
 const AdminLayout = () => {
   const { currentUser, logout } = useAuth();
@@ -139,7 +140,7 @@ const AdminLayout = () => {
     setActiveTab('notifications');
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-emerald-100 lg:pl-60">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-gray-900 dark:to-gray-950 dark:bg-gradient-to-br lg:pl-60">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
@@ -165,17 +166,17 @@ const AdminLayout = () => {
         isMobileMenuOpen={isMobileMenuOpen}
       />
 
-      <div className="flex min-h-screen flex-col">
-        <div className="flex items-center justify-between border-b border-emerald-100/60 bg-white/90 p-4 backdrop-blur">
+      <div className="flex min-h-screen flex-col text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between border-b border-emerald-100/60 bg-white/90 p-4 backdrop-blur dark:border-gray-800 dark:bg-gray-900/90">
           <div className="flex items-end gap-3">
             <img src="/images/LOGOGEMS.png" alt="Admin Logo" className="h-28 w-28 object-contain" />
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">{menuItems.find(item => item.id === activeTab)?.name || 'Dashboard'}</h1>
-              <div className="text-xs text-gray-600">{formattedDate}</div>
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{menuItems.find(item => item.id === activeTab)?.name || 'Dashboard'}</h1>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{formattedDate}</div>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">{formattedTime}</div>
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">{formattedTime}</div>
             <button className="relative rounded-md bg-emerald-600 p-2 text-white shadow hover:bg-emerald-700" title="Notifications" onClick={handleNotificationClick}>
               <FaBell size={18} />
               {getUnreadCount() > 0 && (
@@ -186,21 +187,38 @@ const AdminLayout = () => {
         </div>
         <div className="flex-1 p-4">
           {banner && (
-            <div className="mb-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-800">
+            <div className="mb-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
               <strong>{banner.title}:</strong> {banner.message}
             </div>
           )}
           <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
-              className="h-full"
+            <Suspense
+              fallback={(
+                <div className="h-full">
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="animate-pulse rounded-xl border border-emerald-100 bg-white p-4 shadow-sm">
+                        <div className="h-5 w-24 rounded bg-gray-200" />
+                        <div className="mt-3 h-4 w-full rounded bg-gray-100" />
+                        <div className="mt-2 h-4 w-5/6 rounded bg-gray-100" />
+                        <div className="mt-6 h-8 w-28 rounded bg-emerald-100" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             >
-              {renderContent()}
-            </motion.div>
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18 }}
+                className="h-full"
+              >
+                {renderContent()}
+              </motion.div>
+            </Suspense>
           </AnimatePresence>
         </div>
       </div>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 // Tailwind conversion: removed external CSS import
 import { forgotPassword } from '../services/api'; // ✅ Corrected import
 
-const ForgotPassword = ({ onBack, onResetTokenSent }) => {
+const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +26,7 @@ const ForgotPassword = ({ onBack, onResetTokenSent }) => {
       setSuccessMessage('Password reset link sent to your email!');
       
       setTimeout(() => {
-        onResetTokenSent(email);
+        navigate('/reset-token', { state: { email } });
       }, 2000);
     } catch (err) {
       console.error(err);
@@ -38,7 +40,7 @@ const ForgotPassword = ({ onBack, onResetTokenSent }) => {
     <div className="mt-[64px] md:mt-[72px]">
       <div className="mx-auto max-w-md px-4">
         <div className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-          <button className="mb-3 text-sm text-gray-600 hover:text-emerald-700" onClick={onBack}>
+          <button className="mb-3 text-sm text-gray-600 hover:text-emerald-700" onClick={() => navigate('/login')}>
             ← Back to Login
           </button>
 
@@ -81,7 +83,7 @@ const ForgotPassword = ({ onBack, onResetTokenSent }) => {
 
           <div className="mt-3 text-center text-sm text-gray-700">
             <p>Remember your password? 
-              <button type="button" className="text-emerald-700 hover:underline" onClick={onBack}>
+              <button type="button" className="text-emerald-700 hover:underline" onClick={() => navigate('/login')}>
                 Sign In
               </button>
             </p>

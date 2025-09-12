@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import apiService from '../services/api';
+import { useAuth } from '../context/AuthContext';
 // Removed CourseEnrollmentTest and video lock icons as the sections were deleted
 
 const CoursesPage = () => {
+  const { currentUser } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     otherNames: '',
@@ -82,6 +84,19 @@ const CoursesPage = () => {
       }, 0);
     }
   }, [location.search]);
+
+  // Prefill form from logged-in user
+  useEffect(() => {
+    if (currentUser) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: prev.firstName || currentUser.firstName || currentUser.first_name || '',
+        otherNames: prev.otherNames || currentUser.lastName || currentUser.last_name || '',
+        email: prev.email || currentUser.email || '',
+        phoneNumber: prev.phoneNumber || currentUser.phone || currentUser.phone_number || ''
+      }));
+    }
+  }, [currentUser]);
 
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
@@ -211,6 +226,61 @@ const CoursesPage = () => {
       
       allEnrollments.push(enrollmentData);
       localStorage.setItem('courseEnrollments', JSON.stringify(allEnrollments));
+
+      // Initiate payment for the enrollment
+      const to254 = (input) => {
+        const raw = String(input || '').trim();
+        if (!raw) return '';
+        if (raw.startsWith('+')) {
+          const r = raw.replace(/^\+/, '');
+          if (r.startsWith('254')) return r;
+          if (r.startsWith('07')) return `254${r.slice(1)}`;
+          if (r.startsWith('7') && r.length === 9) return `254${r}`;
+          return r;
+        }
+        if (raw.startsWith('254')) return raw;
+        if (raw.startsWith('07')) return `254${raw.slice(1)}`;
+        if (raw.startsWith('7') && raw.length === 9) return `254${raw}`;
+        return raw;
+      };
+
+      const amountKes = Math.round(Number(targetCourse.cost || 0) / 100) || 1;
+      const phone254 = to254(payload.phone);
+      try {
+        const payRes = await apiService.payments.initiateEnrollmentPayment({
+          enrollmentId: enrollmentData.enrollment_id,
+          amount: amountKes,
+          phone: phone254,
+          productType: 'course'
+        });
+
+        // Persist local payment record for admin view
+        const paymentRecord = {
+          id: Date.now(),
+          enrollment_id: enrollmentData.enrollment_id,
+          course_id: targetCourse.id,
+          amount: amountKes,
+          phone: phone254,
+          checkout_request_id: payRes.checkout_request_id,
+          merchant_request_id: payRes.merchant_request_id,
+          response_code: payRes.response_code,
+          success: payRes.success === true,
+          created_at: new Date().toISOString(),
+          status: payRes.success ? 'pending' : 'failed'
+        };
+        const existingTx = JSON.parse(localStorage.getItem('coursePayments') || '[]');
+        existingTx.push(paymentRecord);
+        localStorage.setItem('coursePayments', JSON.stringify(existingTx));
+
+        if (payRes?.success) {
+          setEnrollNotice({ type: 'success', message: 'Payment initiated. Check your phone to complete the STK push.' });
+        } else {
+          setEnrollNotice({ type: 'error', message: 'Payment initiation failed. Please try again.' });
+        }
+      } catch (pe) {
+        console.error('Payment initiation failed:', pe);
+        setEnrollNotice({ type: 'error', message: 'Could not initiate payment. Please try again later.' });
+      }
       
       console.log('Stored enrollment data:', enrollmentData);
       setEnrollNotice({ type: 'success', message: res?.message || 'Enrolled successfully! We will reach out with next steps.' });
@@ -253,10 +323,33 @@ const CoursesPage = () => {
         <div className="max-w-7xl mx-auto px-4 grid gap-6 md:grid-cols-2 items-center">
           {/* Left Side - Content */}
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Gospel Medical Missionary Evangelism Training</h1>
-            <p className="mt-2 text-gray-700">Equipping you with the knowledge and skills to serve others through natural health ministry</p>
-            <div className="mt-2 text-sm text-gray-600">
-              <p>✉️ info@gemsofinsight.com | 🌐 www.gemsofinsight.com</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Transform Your Health Journey with Expert-Led Natural Remedies Classes</h1>
+            <p className="mt-3 text-gray-700">Learn at your own pace, gain practical herbal skills, and advance your wellness practice from anywhere.</p>
+
+            {/* Stats */}
+            <div className="mt-5 grid grid-cols-3 gap-4">
+              <div>
+                <div className="text-2xl md:text-3xl font-extrabold text-gray-900">5000+</div>
+                <div className="text-sm text-gray-600">Students Enrolled</div>
+              </div>
+              <div>
+                <div className="text-2xl md:text-3xl font-extrabold text-gray-900">120</div>
+                <div className="text-sm text-gray-600">Expert Courses</div>
+              </div>
+              <div>
+                <div className="text-2xl md:text-3xl font-extrabold text-gray-900">98%</div>
+                <div className="text-sm text-gray-600">Success Rate</div>
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <a href="#featured-courses" className="inline-flex items-center rounded-md bg-emerald-700 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-600">Browse Courses</a>
+              <a href="#instructors" className="inline-flex items-center rounded-md border border-gray-300 px-5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50">Learn More</a>
+            </div>
+
+            <div className="mt-3 text-sm text-gray-600">
+              <p>Certified Programs • Lifetime Access • Expert Instructors</p>
             </div>
           </div>
 
@@ -298,6 +391,157 @@ const CoursesPage = () => {
 
       {/* Rest of the content */}
       <div className="max-w-7xl mx-auto px-4">
+        {/* Featured Courses */}
+        <motion.section id="featured-courses" className="py-10" variants={itemVariants}>
+          <div className="mb-4 flex items-end justify-between">
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Featured Courses</h2>
+              <p className="text-sm text-gray-600">Popular natural remedies classes crafted by industry professionals</p>
+            </div>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Card 1 */}
+            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+              <div className="relative h-40">
+                <img src="https://images.unsplash.com/photo-1486899430790-61dbf6f6d98b?w=800&h=400&fit=crop" alt="Digital Marketing Fundamentals" className="h-full w-full object-cover" />
+                <div className="absolute left-3 top-3 inline-flex rounded-full bg-emerald-600 px-2 py-1 text-[10px] font-semibold text-white">FEATURED</div>
+                <div className="absolute right-3 top-3 rounded-full bg-white/90 px-2 py-1 text-xs font-bold text-gray-900">KES 10,000</div>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center gap-2 text-xs text-gray-600"><span className="rounded bg-emerald-50 px-2 py-0.5 text-emerald-700">Beginner</span><span className="rounded bg-gray-50 px-2 py-0.5">4 Weeks</span></div>
+                <h3 className="mt-2 text-lg font-semibold text-gray-900">Foundations of Clinical Nutrition</h3>
+                <p className="mt-1 text-sm text-gray-700">Build a strong base in therapeutic nutrition and meal planning for wellness.</p>
+                <div className="mt-3 flex items-center justify-between text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <img className="h-7 w-7 rounded-full" src="https://i.pravatar.cc/40?img=12" alt="instructor" />
+                    <div>
+                      <div className="font-medium text-gray-900">Sarah N.</div>
+                      <div className="text-xs">Nutrition Educator</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div>⭐ 4.5</div>
+                    <div className="text-xs">342 students</div>
+                  </div>
+                </div>
+                <a href="/courses?enroll=1#registration" className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600">Enroll Now</a>
+              </div>
+            </div>
+
+            {/* Card 2 */}
+            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+              <div className="relative h-40">
+                <img src="https://images.unsplash.com/photo-1505577058444-a3dab90d4253?w=800&h=400&fit=crop" alt="Web Development with JavaScript" className="h-full w-full object-cover" />
+                <div className="absolute left-3 top-3 inline-flex rounded-full bg-emerald-600 px-2 py-1 text-[10px] font-semibold text-white">NEW</div>
+                <div className="absolute right-3 top-3 rounded-full bg-white/90 px-2 py-1 text-xs font-bold text-gray-900">KES 30,000</div>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center gap-2 text-xs text-gray-600"><span className="rounded bg-emerald-50 px-2 py-0.5 text-emerald-700">Intermediate</span><span className="rounded bg-gray-50 px-2 py-0.5">8 Weeks</span></div>
+                <h3 className="mt-2 text-lg font-semibold text-gray-900">Anatomy, Physiology & Clinical Pathology</h3>
+                <p className="mt-1 text-sm text-gray-700">Understand body systems and disease processes essential for safe practice.</p>
+                <div className="mt-3 flex items-center justify-between text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <img className="h-7 w-7 rounded-full" src="https://i.pravatar.cc/40?img=22" alt="instructor" />
+                    <div>
+                      <div className="font-medium text-gray-900">Michael C.</div>
+                      <div className="text-xs">Clinical Trainer</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div>⭐ 5.0</div>
+                    <div className="text-xs">156 students</div>
+                  </div>
+                </div>
+                <a href="/courses?enroll=1#registration" className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600">Enroll Now</a>
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+              <div className="relative h-40">
+                <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&h=400&fit=crop" alt="Data Science" className="h-full w-full object-cover" />
+                <div className="absolute left-3 top-3 inline-flex rounded-full bg-amber-500 px-2 py-1 text-[10px] font-semibold text-white">CERTIFICATE</div>
+                <div className="absolute right-3 top-3 rounded-full bg-white/90 px-2 py-1 text-xs font-bold text-gray-900">Free</div>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center gap-2 text-xs text-gray-600"><span className="rounded bg-emerald-50 px-2 py-0.5 text-emerald-700">Beginner</span><span className="rounded bg-gray-50 px-2 py-0.5">4 Weeks</span></div>
+                <h3 className="mt-2 text-lg font-semibold text-gray-900">Herbology and Botanical Medicine</h3>
+                <p className="mt-1 text-sm text-gray-700">Explore medicinal plants and practical herbal preparations for daily care.</p>
+                <div className="mt-3 flex items-center justify-between text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <img className="h-7 w-7 rounded-full" src="https://i.pravatar.cc/40?img=32" alt="instructor" />
+                    <div>
+                      <div className="font-medium text-gray-900">Dr. Emily W.</div>
+                      <div className="text-xs">Herbal Practitioner</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div>⭐ 4.2</div>
+                    <div className="text-xs">789 students</div>
+                  </div>
+                </div>
+                <a href="/courses?enroll=1#registration" className="mt-4 inline-flex w-full items-center justify-center rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600">Enroll Now</a>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Featured Instructors */}
+        <motion.section id="instructors" className="py-6" variants={itemVariants}>
+          <div className="text-center">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Featured Instructors</h2>
+            <p className="text-sm text-gray-600">Learn from experienced clinicians and herbalists</p>
+          </div>
+          <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {[
+              {name:'Sarah Johnson', role:'Nutrition', img:'https://i.pravatar.cc/160?img=15', students:'2.1k', rating:'4.8'},
+              {name:'Michael Chen', role:'Clinical Science', img:'https://i.pravatar.cc/160?img=20', students:'3.5k', rating:'4.9'},
+              {name:'Amanda Rodriguez', role:'Herbal Medicine', img:'https://i.pravatar.cc/160?img=25', students:'1.8k', rating:'4.6'},
+              {name:'David Thompson', role:'Lifestyle Medicine', img:'https://i.pravatar.cc/160?img=30', students:'2.9k', rating:'4.7'}
+            ].map((ins, idx) => (
+              <div key={idx} className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div className="h-40 w-full overflow-hidden">
+                  <img src={ins.img} alt={ins.name} className="h-full w-full object-cover" />
+                </div>
+                <div className="p-4">
+                  <div className="text-lg font-semibold text-gray-900">{ins.name}</div>
+                  <div className="text-xs uppercase tracking-wide text-emerald-700">{ins.role}</div>
+                  <div className="mt-3 grid grid-cols-2 rounded-md bg-gray-50 p-2 text-center text-sm">
+                    <div>
+                      <div className="font-semibold text-gray-900">{ins.students}</div>
+                      <div className="text-xs text-gray-600">Students</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">{ins.rating}</div>
+                      <div className="text-xs text-gray-600">Rating</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Testimonials */}
+        <motion.section className="py-8" variants={itemVariants}>
+          <div className="text-center">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Testimonials</h2>
+            <p className="text-sm text-gray-600">What learners and partners say about our programs</p>
+          </div>
+          <div className="mt-6 grid gap-6 md:grid-cols-3">
+            {[
+              {quote:'These classes transformed my family health approach. Practical, compassionate, and grounded in faith.', source:'The New Wellness Times'},
+              {quote:'Comprehensive and clear. I now confidently guide clients using safe, effective natural protocols.', source:'Health & Hope Journal'},
+              {quote:'A beautiful blend of science and Scripture. Highly recommend for every missionary-minded believer.', source:'The Guardian of Health'}
+            ].map((t, i) => (
+              <div key={i} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <div className="text-amber-500">★★★★★</div>
+                <p className="mt-2 text-gray-800">{t.quote}</p>
+                <div className="mt-3 font-semibold text-gray-900">{t.source}</div>
+              </div>
+            ))}
+          </div>
+        </motion.section>
         {/* Mission Quote */}
         <motion.section className="py-8 sm:py-10" variants={itemVariants}>
           <div className="grid gap-6 md:grid-cols-2 items-center">
