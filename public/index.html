@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Standard favicon -->
+    <link rel="icon" href="/images/gems%20of%20insight%20favicon.png" sizes="any" type="image/png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/images/gems%20of%20insight%20favicon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="64x64"
+      href="/images/gems%20of%20insight%20favicon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="/images/gems%20of%20insight%20favicon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="256x256"
+      href="/images/gems%20of%20insight%20favicon.png"
+    />
+    
+    <!-- Apple Touch Icons -->
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/images/gems%20of%20insight%20favicon.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/images/gems%20of%20insight%20favicon.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="/images/gems%20of%20insight%20favicon.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/images/gems%20of%20insight%20favicon.png"
+    />
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileImage" content="/images/gems%20of%20insight%20favicon.png" />
+    <meta name="msapplication-TileColor" content="#16A34A" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#16A34A" />
+    <meta name="description" content="Gems of insight - Fresh, Healthy, Natural" />
+    <title>Gems of insight</title>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      (function(){
+        try {
+          var mode = localStorage.getItem('admin_theme') || 'system';
+          var root = document.documentElement;
+          if (mode === 'light') {
+            root.classList.remove('dark');
+          } else if (mode === 'dark') {
+            root.classList.add('dark');
+          } else {
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDark) root.classList.add('dark'); else root.classList.remove('dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>All you need to get well soon</noscript>
+    <div id="root"></div>
+  </body>
+</html>

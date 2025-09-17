@@ -1,0 +1,277 @@
+.location-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f7f4 0%, #e0f2f1 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.location-hero {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), 
+              url('https://res.cloudinary.com/djksfayfu/image/upload/v1748432253/samples/two-ladies.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 80px 20px;
+  text-align: center;
+  position: relative;
+}
+
+.location-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(46, 125, 50, 0.3), rgba(38, 166, 154, 0.2));
+  z-index: 1;
+}
+
+.location-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.back-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.location-hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.location-hero p {
+  font-size: 1.3rem;
+  opacity: 0.95;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.location-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+.location-content {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.map-section {
+  margin-bottom: 40px;
+}
+
+.map-container {
+  margin-bottom: 30px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.location-info {
+  text-align: center;
+}
+
+.location-info h2 {
+  font-size: 2.5rem;
+  color: #2e7d32;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.location-info > p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.location-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 15px;
+  border-left: 4px solid #2e7d32;
+  transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.detail-item .icon {
+  font-size: 2rem;
+  margin-top: 5px;
+}
+
+.detail-item h4 {
+  font-size: 1.3rem;
+  color: #2e7d32;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.detail-item p {
+  color: #666;
+  line-height: 1.6;
+  margin: 5px 0;
+}
+
+.location-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.action-btn {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 160px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  color: white;
+  box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+}
+
+.action-btn.primary:hover {
+  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(46, 125, 50, 0.4);
+}
+
+.action-btn.secondary {
+  background: linear-gradient(135deg, #26a69a, #80cbc4);
+  color: white;
+  box-shadow: 0 4px 15px rgba(38, 166, 154, 0.3);
+}
+
+.action-btn.secondary:hover {
+  background: linear-gradient(135deg, #00897b, #26a69a);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(38, 166, 154, 0.4);
+}
+
+.action-btn.whatsapp {
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  color: white;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.action-btn.whatsapp:hover {
+  background: linear-gradient(135deg, #128c7e, #075e54);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+}
+
+.action-btn:not(.primary):not(.secondary):not(.whatsapp) {
+  background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+  color: #333;
+  border: 2px solid #ddd;
+}
+
+.action-btn:not(.primary):not(.secondary):not(.whatsapp):hover {
+  background: linear-gradient(135deg, #e0e0e0, #d0d0d0);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .location-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .location-hero p {
+    font-size: 1.1rem;
+  }
+  
+  .location-container {
+    padding: 40px 20px;
+  }
+  
+  .location-content {
+    padding: 30px 20px;
+  }
+  
+  .location-details {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .location-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .action-btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .location-hero {
+    padding: 60px 15px;
+  }
+  
+  .location-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .location-info h2 {
+    font-size: 2rem;
+  }
+  
+  .detail-item {
+    padding: 15px;
+  }
+  
+  .detail-item .icon {
+    font-size: 1.5rem;
+  }
+}

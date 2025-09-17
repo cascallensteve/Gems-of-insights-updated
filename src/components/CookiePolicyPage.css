@@ -1,0 +1,250 @@
+.cookie-policy-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a4d2e 0%, #2d5a3d 100%);
+  color: #ffffff;
+  padding: 40px 20px;
+}
+
+.cookie-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  color: #1a4d2e;
+}
+
+.cookie-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 3px solid #1a4d2e;
+}
+
+.cookie-header h1 {
+  font-size: 2.5rem;
+  color: #1a4d2e;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.cookie-header p {
+  font-size: 1.1rem;
+  color: #2d5a3d;
+  margin: 0;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: #1a4d2e;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(26, 77, 46, 0.3);
+}
+
+.back-button:hover {
+  background: #2d5a3d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 77, 46, 0.4);
+}
+
+.cookie-section {
+  margin-bottom: 35px;
+  padding: 25px;
+  background: rgba(26, 77, 46, 0.05);
+  border-radius: 15px;
+  border-left: 5px solid #1a4d2e;
+}
+
+.cookie-section h2 {
+  color: #1a4d2e;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  font-weight: 600;
+  border-bottom: 2px solid #1a4d2e;
+  padding-bottom: 10px;
+}
+
+.cookie-section h3 {
+  color: #2d5a3d;
+  font-size: 1.4rem;
+  margin: 25px 0 15px 0;
+  font-weight: 600;
+}
+
+.cookie-section p {
+  line-height: 1.8;
+  margin-bottom: 15px;
+  color: #1a4d2e;
+  font-size: 1rem;
+}
+
+.cookie-section ul {
+  margin: 15px 0;
+  padding-left: 25px;
+}
+
+.cookie-section li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+  color: #1a4d2e;
+}
+
+.cookie-section strong {
+  color: #1a4d2e;
+  font-weight: 600;
+}
+
+.cookie-section a {
+  color: #2d5a3d;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.cookie-section a:hover {
+  color: #1a4d2e;
+}
+
+.cookie-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 25px 0;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(26, 77, 46, 0.1);
+}
+
+.cookie-table th {
+  background: #1a4d2e;
+  color: white;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.cookie-table td {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  color: #1a4d2e;
+  font-size: 0.95rem;
+}
+
+.cookie-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cookie-table tr:nth-child(even) {
+  background: rgba(26, 77, 46, 0.03);
+}
+
+.contact-info {
+  background: linear-gradient(135deg, #1a4d2e 0%, #2d5a3d 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.contact-info h3 {
+  color: white;
+  margin-bottom: 20px;
+}
+
+.contact-info p {
+  color: #e8f5e8;
+  margin-bottom: 10px;
+}
+
+.contact-info a {
+  color: #ffffff;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.contact-info a:hover {
+  color: #e8f5e8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cookie-policy-page {
+    padding: 20px 15px;
+  }
+  
+  .cookie-container {
+    padding: 25px 20px;
+  }
+  
+  .cookie-header h1 {
+    font-size: 2rem;
+  }
+  
+  .back-button {
+    position: relative;
+    top: auto;
+    left: auto;
+    margin-bottom: 20px;
+    display: block;
+    width: fit-content;
+  }
+  
+  .cookie-section {
+    padding: 20px 15px;
+  }
+  
+  .cookie-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .cookie-section h3 {
+    font-size: 1.2rem;
+  }
+  
+  .cookie-table {
+    font-size: 0.9rem;
+  }
+  
+  .cookie-table th,
+  .cookie-table td {
+    padding: 10px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cookie-container {
+    padding: 20px 15px;
+  }
+  
+  .cookie-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .cookie-section {
+    padding: 15px 10px;
+  }
+  
+  .cookie-table {
+    font-size: 0.8rem;
+  }
+  
+  .cookie-table th,
+  .cookie-table td {
+    padding: 8px 6px;
+  }
+  
+  .contact-info {
+    padding: 20px 15px;
+  }
+}
